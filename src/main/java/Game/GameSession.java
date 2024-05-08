@@ -6,6 +6,8 @@ import main.java.Object.Card;
 import main.java.Object.Deck;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -99,38 +101,46 @@ public class GameSession extends JFrame {
 
     private void saveGame() {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("gameSave.ser"))) {
-            out.writeObject(drawPile);
-            out.writeObject(discardPile);
-            out.writeObject(players);
-            out.writeObject(currentPlayerIndex);
-            out.writeBoolean(isClockwise);
+            out.writeObject(drawPile); // Write the deck to the output stream
+            out.writeObject(discardPile); // Write the discard pile to the output stream
+            out.writeObject(players); // Write the list of players to the output stream
+            out.writeInt(currentPlayerIndex); // Write the current player index to the output stream
+            out.writeBoolean(isClockwise); // Write the game direction to the output stream
             JOptionPane.showMessageDialog(this, "Game saved successfully.", "Game Saved", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Failed to save the game: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
     
     private void loadGame() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new File(".")); // sets current directory
+        fileChooser.setCurrentDirectory(new File(".")); // Ensure this is the correct path
+        fileChooser.setDialogTitle("Select Saved Game File");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("UNO Save Files", "ser")); // Make sure the extension is correct
+
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(selectedFile))) {
-                // Assuming the order of objects written is known and consistent
-                this.drawPile = (Deck) in.readObject();
-                this.discardPile = (List<Card>) in.readObject();
-                this.players = (List<Player>) in.readObject();
-                this.currentPlayerIndex = in.readInt();
-                this.isClockwise = in.readBoolean();
+                drawPile = (Deck) in.readObject();
+                discardPile = (List<Card>) in.readObject();
+                players = (List<Player>) in.readObject();
+                currentPlayerIndex = in.readInt();
+                isClockwise = in.readBoolean();
 
-                updateGameUI();  // Update the UI with the loaded game state
+                setGameState(drawPile, discardPile, players, currentPlayerIndex, isClockwise);
                 JOptionPane.showMessageDialog(this, "Game loaded successfully!", "Game Loaded", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException | ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(this, "Failed to load the game: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace(); // This will print more detailed information about the exception
+                JOptionPane.showMessageDialog(this, "Failed to load the game: " + (ex.getMessage() != null ? ex.getMessage() : "Unknown error"), "Load Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
+
+
+
 
 
 
