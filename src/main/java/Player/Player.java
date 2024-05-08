@@ -1,19 +1,24 @@
 package main.java.Player;
 
 import main.java.Object.Card;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player {
+public class Player implements Serializable {
+    private static final long serialVersionUID = 6529685098267757690L; // Serializable ID
+
     private String name;
-    private List<Card> hand;
-    private boolean isBot;
+    private List<Card> hand; // Ensure Card class is also Serializable
+    private boolean isBot; // Primitive data type is naturally serializable
 
     public Player(String name, boolean isBot) {
         this.name = name;
         this.hand = new ArrayList<>();
         this.isBot = isBot;
     }
+
+    // Ensure all getters, setters, and methods do not affect serialization
 
     public String getName() {
         return name;

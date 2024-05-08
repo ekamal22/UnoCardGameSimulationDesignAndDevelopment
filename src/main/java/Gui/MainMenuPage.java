@@ -1,8 +1,12 @@
 package main.java.Gui;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import main.java.Game.GameSession;
+import main.java.Object.Card;
+import main.java.Object.Deck;
+import main.java.Player.Player;
 import main.java.User.UserData;
 import main.java.Utils.NonEditableTableModel;
 import java.awt.*;
@@ -41,13 +45,16 @@ public class MainMenuPage extends JFrame {
         newGameButton.addActionListener(e -> startNewGame());
         JButton continueGameButton = new JButton("Continue Game");
         continueGameButton.addActionListener(e -> continueExistingGame());
+       
+
         JButton logOutButton = new JButton("Log Out");
         logOutButton.addActionListener(e -> logOut());
 
         gameOptionsPanel.add(newGameButton);
         gameOptionsPanel.add(continueGameButton);
         gameOptionsPanel.add(logOutButton);
-
+        savedSessions = new ArrayList<>();
+        
         // Adding components to the frame
         add(leaderboardScrollPane, BorderLayout.WEST);
         add(userStatsScrollPane, BorderLayout.CENTER);
@@ -141,22 +148,33 @@ public class MainMenuPage extends JFrame {
     }
 
     private void continueExistingGame() {
-        if (savedSessions.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No saved game sessions available", "No Saved Sessions", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File("."));  // Set to the directory of the game or a specified path
+        fileChooser.setDialogTitle("Select Saved Game File");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("UNO Save Files", "ser"));  // Assuming the save files have a .ser extension
 
-        String sessionName = (String) JOptionPane.showInputDialog(this, "Select Game Session to Continue:", "Continue Game",
-            JOptionPane.QUESTION_MESSAGE, null, savedSessions.toArray(), savedSessions.get(0));
-        
-        if (sessionName != null) {
-            // Load and continue the selected game session
-            // Actual logic will depend on how game sessions are saved and loaded
-            JOptionPane.showMessageDialog(this, "Continuing session: " + sessionName);
-            new GameSession(sessionName, 4); // Example logic, replace with actual session loading
-            dispose();
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(selectedFile))) {
+                Deck drawPile = (Deck) in.readObject();
+                List<Card> discardPile = (List<Card>) in.readObject();
+                List<Player> players = (List<Player>) in.readObject();
+                int currentPlayerIndex = in.readInt();
+                boolean isClockwise = in.readBoolean();
+
+                // Start a new GameSession with loaded data
+                GameSession loadedGameSession = new GameSession("Loaded Game", players.size());  // 'Loaded Game' and player size are placeholders
+                loadedGameSession.setGameState(drawPile, discardPile, players, currentPlayerIndex, isClockwise);
+                loadedGameSession.setVisible(true);
+                this.dispose();  // Close the MainMenuPage
+
+            } catch (IOException | ClassNotFoundException ex) {
+                JOptionPane.showMessageDialog(this, "Failed to load the game: " + ex.getMessage(), "Load Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
+
 
     private void logOut() {
         new LoginPage();

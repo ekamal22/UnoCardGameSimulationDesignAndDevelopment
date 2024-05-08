@@ -64,6 +64,7 @@ public class GameSession extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("Menu");
 
+        // Existing Menu Items
         JMenuItem profileMenuItem = new JMenuItem("Profile");
         profileMenuItem.addActionListener(e -> showProfile());
 
@@ -76,8 +77,14 @@ public class GameSession extends JFrame {
         JMenuItem exitToDesktopMenuItem = new JMenuItem("Exit to Desktop");
         exitToDesktopMenuItem.addActionListener(e -> System.exit(0));
 
+        // New Menu Item for Loading Game
+        JMenuItem loadGameMenuItem = new JMenuItem("Load Game");
+        loadGameMenuItem.addActionListener(e -> loadGame());
+
+        // Adding items to the menu
         menu.add(profileMenuItem);
         menu.add(saveMenuItem);
+        menu.add(loadGameMenuItem);  // Add the load game menu item here
         menu.add(exitToMainMenuMenuItem);
         menu.add(exitToDesktopMenuItem);
 
@@ -85,29 +92,47 @@ public class GameSession extends JFrame {
         setJMenuBar(menuBar);
     }
 
+
     private void showProfile() {
         JOptionPane.showMessageDialog(this, "Show player's profile (to be implemented)", "Profile", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void saveGame() {
-        try (FileOutputStream fileOut = new FileOutputStream(sessionName + "_game.ser");
-             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
-            // Save players and their hands
-            out.writeObject(players);
-            
-            // Save the draw pile and discard pile
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("gameSave.ser"))) {
             out.writeObject(drawPile);
             out.writeObject(discardPile);
-            
-            // Save the current game state
+            out.writeObject(players);
+            out.writeObject(currentPlayerIndex);
             out.writeBoolean(isClockwise);
-            out.writeInt(currentPlayerIndex);
-            
-            JOptionPane.showMessageDialog(this, "Game saved successfully!", "Save", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Game saved successfully.", "Game Saved", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Error saving game: " + e.getMessage(), "Save", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Failed to save the game: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    private void loadGame() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(".")); // sets current directory
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(selectedFile))) {
+                // Assuming the order of objects written is known and consistent
+                this.drawPile = (Deck) in.readObject();
+                this.discardPile = (List<Card>) in.readObject();
+                this.players = (List<Player>) in.readObject();
+                this.currentPlayerIndex = in.readInt();
+                this.isClockwise = in.readBoolean();
+
+                updateGameUI();  // Update the UI with the loaded game state
+                JOptionPane.showMessageDialog(this, "Game loaded successfully!", "Game Loaded", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException | ClassNotFoundException ex) {
+                JOptionPane.showMessageDialog(this, "Failed to load the game: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+
 
     private void exitToMainMenu() {
         // Exit to main menu by opening the MainMenuPage and closing the current game session
@@ -193,32 +218,39 @@ public class GameSession extends JFrame {
     }
 
     private void updateGameUI() {
-        // Update the draw pile, discard pile, and player panels
+        // Clear and repopulate the draw pile UI
         drawPilePanel.removeAll();
         drawPilePanel.add(new JLabel("Cards: " + drawPile.size()), BorderLayout.CENTER);
 
+        // Clear and repopulate the discard pile UI
         discardPilePanel.removeAll();
         if (!discardPile.isEmpty()) {
             discardPilePanel.add(new JLabel(discardPile.get(discardPile.size() - 1).toString()), BorderLayout.CENTER);
         }
 
+        // Update players' hands
         playerPanel.removeAll();
         for (Player player : players) {
             playerPanel.add(new JLabel(player.getName() + ": " + player.getCardCount() + " cards"));
         }
 
-        // Update play card combo box
-        Player currentPlayer = players.get(currentPlayerIndex);
+        // Repopulate card selection combo box
         playCardComboBox.removeAllItems();
-        for (Card card : currentPlayer.getHand()) {
-            playCardComboBox.addItem(card);
+        if (!players.isEmpty() && currentPlayerIndex < players.size()) {
+            Player currentPlayer = players.get(currentPlayerIndex);
+            for (Card card : currentPlayer.getHand()) {
+                playCardComboBox.addItem(card);
+            }
         }
 
+        // Set game direction
         directionLabel.setText("Direction: " + (isClockwise ? "Clockwise" : "Counter-Clockwise"));
 
-        revalidate();
         repaint();
+        revalidate();
     }
+
+
     
     private void setupLogger() {
         try {
@@ -348,6 +380,17 @@ public class GameSession extends JFrame {
         }
         updateGameUI();
     }
+    
+    public void setGameState(Deck drawPile, List<Card> discardPile, List<Player> players, int currentPlayerIndex, boolean isClockwise) {
+        this.drawPile = drawPile;
+        this.discardPile = discardPile;
+        this.players = players;
+        this.currentPlayerIndex = currentPlayerIndex;
+        this.isClockwise = isClockwise;
+        updateGameUI();  // Ensure the UI reflects the loaded state
+    }
+
+    
     
     
 }
