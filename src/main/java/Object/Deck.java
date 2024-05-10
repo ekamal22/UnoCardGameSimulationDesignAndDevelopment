@@ -61,4 +61,9 @@ public class Deck implements Serializable {
     public int size() {
         return cards.size();
     }
+    
+    public boolean isEmpty() {
+        return cards.isEmpty();
+    }
+
 }
