@@ -19,7 +19,7 @@ import java.util.logging.*;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 
-public class GameSession extends JFrame {
+public class Session extends JFrame {
     private String sessionName;
     private int playerCount;
     private JLabel sessionNameLabel;
@@ -40,12 +40,12 @@ public class GameSession extends JFrame {
     private Deck drawPile;
     private List<Card> discardPile;
     private int currentPlayerIndex = 0;
-    private static final Logger LOGGER = Logger.getLogger(GameSession.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Session.class.getName());
     private static final String LOG_FILE_PATH = "game_logs.txt";
     private String currentColor;
 
 
-    public GameSession(String sessionName, int playerCount) {
+    public Session(String sessionName, int playerCount) {
         this.sessionName = sessionName;
         this.playerCount = playerCount;
         this.players = new ArrayList<>();
@@ -262,21 +262,24 @@ public class GameSession extends JFrame {
             playerPanel.add(new JLabel(player.getName() + ": " + player.getCardCount() + " cards"));
         }
 
-        // Repopulate card selection combo box
+     // Repopulate card selection combo box
         playCardComboBox.removeAllItems();
-        if (!players.isEmpty() && currentPlayerIndex < players.size()) {
-            Player currentPlayer = players.get(currentPlayerIndex);
-            System.out.println("Current Player: " + currentPlayer.getName() + " with hand:");
+        Player currentPlayer = players.get(currentPlayerIndex);
+        if (!currentPlayer.isBot()) {
+            System.out.println("Current player's turn: " + currentPlayer.getName() + ", loading cards:");
             for (Card card : currentPlayer.getHand()) {
-                System.out.println(card); // Debug: Output each card
+                System.out.println("Adding card: " + card);
                 playCardComboBox.addItem(card);
             }
+        } else {
+            System.out.println("Bot's turn. No cards loaded in dropdown.");
         }
+
 
         // Set game direction
         directionLabel.setText("Direction: " + (isClockwise ? "Clockwise" : "Counter-Clockwise"));
         System.out.println("Game direction: " + (isClockwise ? "Clockwise" : "Counter-Clockwise")); // Debugging: Indicate the current direction of play
-
+        unoButton.setEnabled(players.get(currentPlayerIndex).getCardCount() == 1);
         // Ensure UI components are refreshed
         revalidate();
         repaint();
@@ -307,51 +310,71 @@ public class GameSession extends JFrame {
 
     private void playCard(Card card) {
         Player currentPlayer = players.get(currentPlayerIndex);
-        System.out.println("Attempting to play card: " + card);
-
-        // Check if the card can be played
         Card topCard = discardPile.get(discardPile.size() - 1);
+
+        LOGGER.info("Attempting to play card. Current card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
+
         if (canPlayCard(card, topCard)) {
-            // Remove the card from the player's hand
             boolean wasRemoved = currentPlayer.removeCard(card);
             if (wasRemoved) {
-                System.out.println("Card " + card + " removed from " + currentPlayer.getName() + "'s hand.");
+                discardPile.add(card);
+                updateGameUI();
+
+                LOGGER.info("Card played. New card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
+
+                // If this was the last card, check if Uno was correctly called
+                if (currentPlayer.getCardCount() == 0) {
+                    if (!currentPlayer.hasCalledUno()) {
+                        applyPenalty(currentPlayer);
+                        JOptionPane.showMessageDialog(this, currentPlayer.getName() + " did not call UNO before playing the last card! Penalty applied.", "Missed UNO", JOptionPane.ERROR_MESSAGE);
+                        LOGGER.info("Penalty applied for not calling Uno.");
+                        currentPlayer.addCard(drawPile.drawCard());  // Assuming penalty is drawing an extra card
+                        currentPlayer.addCard(drawPile.drawCard());
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Congratulations, " + currentPlayer.getName() + " has won the game!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                        LOGGER.info("Game over. Player won without penalty.");
+                        checkGameEnd();
+                    }
+                } else {
+                    nextPlayer();
+                }
             } else {
-                System.out.println("Failed to remove card " + card + " from " + currentPlayer.getName() + "'s hand.");
+                JOptionPane.showMessageDialog(this, "Failed to remove card!", "Error", JOptionPane.ERROR_MESSAGE);
             }
-
-            // Add the card to the discard pile
-            discardPile.add(card);
-            System.out.println("Card " + card + " added to the discard pile.");
-
-            // Handle wild card color change if needed
-            if (card.getValue().startsWith("Wild")) {
-                String newColor = currentPlayer.isBot() ? getRandomColor() : getUserSelectedColor();
-                currentColor = newColor; // Update current color for gameplay
-                JOptionPane.showMessageDialog(this, "Color changed to " + newColor, "Color Change", JOptionPane.INFORMATION_MESSAGE);
-                System.out.println("Wild card played. Color changed to: " + newColor);
-            }
-
-            // Check if player has only one card left
-            if (currentPlayer.getCardCount() == 1 && !currentPlayer.hasCalledUno()) {
-                JOptionPane.showMessageDialog(this, "UNO! " + currentPlayer.getName() + " has one card left!", "UNO", JOptionPane.INFORMATION_MESSAGE);
-                currentPlayer.callUno();
-            }
-
-            // Update the UI
-            updateGameUI();
-
-            checkGameEnd();  // Ensure this is called right after the UI update if a card is played
-            if (currentPlayer.getCardCount() > 0) {
-                nextPlayer();
         } else {
             JOptionPane.showMessageDialog(this, "Invalid card played!", "Error", JOptionPane.ERROR_MESSAGE);
-            System.out.println("Invalid card played. Card does not match the top card of the discard pile.");
-        }
         }
     }
+
+
+
+
+
     
     
+    private void promptUnoCall(Player player) {
+        if (player.isBot()) {
+            // Simulate bot behavior for calling Uno
+            player.callUno();
+            LOGGER.info(player.getName() + " calls Uno automatically.");
+        } else {
+            int response = JOptionPane.showConfirmDialog(this, "Do you want to call Uno?", "Call Uno?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (response == JOptionPane.YES_OPTION) {
+                player.callUno();
+                JOptionPane.showMessageDialog(this, "Uno called!", "Uno", JOptionPane.INFORMATION_MESSAGE);
+                LOGGER.info(player.getName() + " has called Uno.");
+            } else {
+                applyPenalty(player);
+                JOptionPane.showMessageDialog(this, player.getName() + " forgot to call Uno! Penalty applied.", "Missed Uno", JOptionPane.ERROR_MESSAGE);
+                LOGGER.info(player.getName() + " missed calling Uno and received a penalty.");
+            }
+        }
+    }
+
+
+
+
+
 
 
     private String getRandomColor() {
@@ -407,25 +430,24 @@ public class GameSession extends JFrame {
     
     private void checkGameEnd() {
         Player currentPlayer = players.get(currentPlayerIndex);
-        // Check if the current player has no cards left
         if (currentPlayer.getCardCount() == 0) {
             if (currentPlayer.hasCalledUno()) {
-                // Player has correctly called UNO and won the game
-                int score = calculateScore();  // Assuming this method calculates the total score based on remaining cards in other players' hands
-                LOGGER.info(currentPlayer.getName() + " won the game with " + score + " points!");
-                JOptionPane.showMessageDialog(this, "Game Over, Player: " + currentPlayer.getName() + " wins!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
-                endGame(); // Terminate the game
+                JOptionPane.showMessageDialog(this, "Game Over, " + currentPlayer.getName() + " wins!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                System.out.println(currentPlayer.getName() + " wins the game!");
+                endGame();
             } else {
-                // Player did not call UNO but reached 0 cards, penalty applied
-                JOptionPane.showMessageDialog(this, currentPlayer.getName() + " did not call UNO! Penalized with 2 cards.", "Missed UNO!", JOptionPane.ERROR_MESSAGE);
-                applyPenalty(currentPlayer);
-                nextPlayer();  // Continue the game allowing other players to play
+                // Apply penalty for not calling UNO
+                currentPlayer.addCard(drawPile.drawCard());
+                currentPlayer.addCard(drawPile.drawCard());
+                JOptionPane.showMessageDialog(this, currentPlayer.getName() + " reached 0 cards without calling UNO! Penalty applied.", "Penalty", JOptionPane.ERROR_MESSAGE);
+                updateGameUI(); // Update UI to reflect the penalty
+                nextPlayer(); // Continue the game
             }
-        } else {
-            // No one has won yet, continue the game
-            nextPlayer();
         }
     }
+    
+    
+    
 
 
     private void applyPenalty(Player player) {
@@ -492,25 +514,25 @@ public class GameSession extends JFrame {
     }
 
     private void nextPlayer() {
-        // Calculate the next player index considering the direction of play
-        int nextIndex = isClockwise ? (currentPlayerIndex + 1) % playerCount : (currentPlayerIndex - 1 + playerCount) % playerCount;
-        
-        // Check if a "Skip" card was played; if so, skip the next player's turn
-        if (!discardPile.isEmpty() && discardPile.get(discardPile.size() - 1).getValue().equals("Skip")) {
-            System.out.println("Skipping turn due to a Skip card.");
-            nextIndex = isClockwise ? (nextIndex + 1) % playerCount : (nextIndex - 1 + playerCount) % playerCount; // Advance one more spot
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        Player currentPlayer = players.get(currentPlayerIndex);
+
+        // Clear Uno call at the start of a new turn if necessary
+        if (currentPlayer.hasCalledUno() && currentPlayer.getCardCount() > 1) {
+            currentPlayer.clearUnoCall();
         }
 
-        currentPlayerIndex = nextIndex; // Set the new current player index
-
-        // Check if it's a bot's turn, if yes, let the bot play automatically
-        Player currentPlayer = players.get(currentPlayerIndex);
-        if (currentPlayer.isBot()) {
+        if (!currentPlayer.isBot()) {
+            System.out.println("Human player's turn: " + currentPlayer.getName());
+        } else {
             playBotTurn(currentPlayer);
         }
-
-        updateGameUI(); // Update the user interface after changing the player
+        updateGameUI();  // Ensure UI is updated whenever the turn changes
     }
+
+
+
+
 
     
     private void playTurn() {
@@ -568,23 +590,44 @@ public class GameSession extends JFrame {
     private void playBotTurn(Player bot) {
         Card topCard = discardPile.get(discardPile.size() - 1);
         Card cardToPlay = bot.findPlayableCard(topCard);
-
+        
         if (cardToPlay != null) {
+            System.out.println(bot.getName() + " is playing " + cardToPlay);
             playCard(cardToPlay);
+            if (cardToPlay.getValue().startsWith("Wild")) {
+                String newColor = getRandomColor(); // Bot selects a random color
+                currentColor = newColor; // Set the current color after a wild card
+                System.out.println(bot.getName() + " changed the color to " + newColor);
+            }
         } else {
-            drawCardUntilPlayable(topCard, bot);  // Correctly pass the bot as the player
+            System.out.println(bot.getName() + " cannot play, drawing cards...");
+            drawCardUntilPlayable(topCard, bot);
         }
+
+        if (bot.getCardCount() == 1 && !bot.hasCalledUno()) {
+            System.out.println(bot.getName() + " has one card left but did not call UNO!");
+            bot.callUno(); // Simulate bot calling UNO, or handle missing UNO
+        }
+
+        checkGameEnd();
     }
+
 
     private void onUnoButtonClicked() {
-        System.out.println("UNO Button Clicked");
         Player currentPlayer = players.get(currentPlayerIndex);
-        if (currentPlayer.getCardCount() == 1) {
-            JOptionPane.showMessageDialog(this, currentPlayer.getName() + " called UNO!", "UNO", JOptionPane.INFORMATION_MESSAGE);
+        if (currentPlayer.getCardCount() == 1) { // Player is about to play the last card
+            currentPlayer.callUno();
+            JOptionPane.showMessageDialog(this, currentPlayer.getName() + " has called UNO!", "UNO Called", JOptionPane.INFORMATION_MESSAGE);
+            LOGGER.info(currentPlayer.getName() + " has called Uno.");
         } else {
-            JOptionPane.showMessageDialog(this, "You can't call UNO now!", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "You can only call UNO when you are about to play your last card!", "UNO Call Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+
+
+
+
 
     private void onCallOutButtonClicked() {
         System.out.println("Call Out Button Clicked");

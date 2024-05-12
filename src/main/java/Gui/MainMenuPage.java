@@ -3,7 +3,7 @@ package main.java.Gui;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
-import main.java.Game.GameSession;
+import main.java.Game.Session;
 import main.java.Object.Card;
 import main.java.Object.Deck;
 import main.java.Player.Player;
@@ -135,7 +135,7 @@ public class MainMenuPage extends JFrame {
             try {
                 int playerCount = Integer.parseInt(playerCountStr);
                 if (playerCount >= 2 && playerCount <= 10) {
-                    new GameSession(sessionName, playerCount);
+                    new Session(sessionName, playerCount);
                     savedSessions.add(sessionName);
                     dispose();
                 } else {
@@ -164,7 +164,7 @@ public class MainMenuPage extends JFrame {
                 boolean isClockwise = in.readBoolean();
 
                 // Start a new GameSession with loaded data
-                GameSession loadedGameSession = new GameSession("Loaded Game", players.size());  // 'Loaded Game' and player size are placeholders
+                Session loadedGameSession = new Session("Loaded Game", players.size());  // 'Loaded Game' and player size are placeholders
                 loadedGameSession.setGameState(drawPile, discardPile, players, currentPlayerIndex, isClockwise);
                 loadedGameSession.setVisible(true);
                 this.dispose();  // Close the MainMenuPage

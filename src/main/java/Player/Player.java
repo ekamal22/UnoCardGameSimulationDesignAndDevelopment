@@ -11,14 +11,14 @@ public class Player implements Serializable {
     private String name;
     private List<Card> hand; // Ensure Card class is also Serializable
     private boolean isBot; // Primitive data type is naturally serializable
-    private boolean calledUno; // Field to track if UNO has been called
+    private boolean hasCalledUno = false; // Field to track if UNO has been called
 
 
     public Player(String name, boolean isBot) {
         this.name = name;
         this.hand = new ArrayList<>();
         this.isBot = isBot;
-        this.calledUno = false;
+        this.hasCalledUno = false;
     }
 
     // Ensure all getters, setters, and methods do not affect serialization
@@ -30,14 +30,14 @@ public class Player implements Serializable {
     public void addCard(Card card) {
         hand.add(card);
         if (hand.size() != 1) {
-            calledUno = false;  // Reset UNO call when card count changes
+        	this.hasCalledUno = false;  // Reset UNO call when card count changes
         }
     }
 
     public boolean removeCard(Card card) {
         boolean wasRemoved = hand.remove(card);
         if (hand.size() != 1) {
-            calledUno = false;  // Reset UNO call when card count changes
+        	this.hasCalledUno = false;  // Reset UNO call when card count changes
         }
         return wasRemoved;
     }
@@ -76,14 +76,16 @@ public class Player implements Serializable {
     
  // Method to determine if the player has called UNO
     public boolean hasCalledUno() {
-        return calledUno;
+        return this.hasCalledUno;
     }
 
     // Method to set the UNO call status
     public void callUno() {
-        if (hand.size() == 1) {
-            calledUno = true;
-        }
+        this.hasCalledUno = true;
+    }
+    
+    public void clearUnoCall() {
+        this.hasCalledUno = false;
     }
 
 }
