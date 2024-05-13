@@ -322,18 +322,20 @@ public class Session extends JFrame {
 
                 LOGGER.info("Card played. New card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
 
-                // If this was the last card, check if Uno was correctly called
+                // Check if the player played their last card
                 if (currentPlayer.getCardCount() == 0) {
-                    if (!currentPlayer.hasCalledUno()) {
+                	System.out.println(currentPlayer.hasCalledUno());
+                    if (currentPlayer.hasCalledUno()) {
+                        // Handle the case where Uno was called correctly when playing the last card
+                        JOptionPane.showMessageDialog(this, "Congratulations, " + currentPlayer.getName() + " has won the game!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                        LOGGER.info(currentPlayer.getName() + " wins the game with a correct Uno call.");
+                        currentPlayer.clearUnoCall(); // Clear the Uno call after a successful win
+                        checkGameEnd();
+                    } else {
+                        // Handle the case where Uno was NOT called correctly when playing the last card
                         applyPenalty(currentPlayer);
                         JOptionPane.showMessageDialog(this, currentPlayer.getName() + " did not call UNO before playing the last card! Penalty applied.", "Missed UNO", JOptionPane.ERROR_MESSAGE);
-                        LOGGER.info("Penalty applied for not calling Uno.");
-                        currentPlayer.addCard(drawPile.drawCard());  // Assuming penalty is drawing an extra card
-                        currentPlayer.addCard(drawPile.drawCard());
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Congratulations, " + currentPlayer.getName() + " has won the game!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
-                        LOGGER.info("Game over. Player won without penalty.");
-                        checkGameEnd();
+                        LOGGER.info(currentPlayer.getName() + " failed to call Uno on the last card and received a penalty.");
                     }
                 } else {
                     nextPlayer();
@@ -345,6 +347,8 @@ public class Session extends JFrame {
             JOptionPane.showMessageDialog(this, "Invalid card played!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+
 
 
 
