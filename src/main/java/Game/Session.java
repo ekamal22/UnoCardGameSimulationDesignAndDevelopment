@@ -412,22 +412,17 @@ public class Session extends JFrame {
     
     
     private void checkGameEnd() {
-        if (gameOver) return;  // If game is over, do not perform any more checks
-
         Player currentPlayer = players.get(currentPlayerIndex);
+        // Check if game should end based on current player's card count
         if (currentPlayer.getCardCount() == 0) {
-            if (currentPlayer.hasCalledUno()) {
+            if (checkUno(currentPlayer)) {
+                // If UNO was called or not needed, congratulate and end game
                 JOptionPane.showMessageDialog(this, "Game Over, " + currentPlayer.getName() + " wins!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
                 System.out.println(currentPlayer.getName() + " wins the game!");
                 endGame();
-                gameOver = true;  // Set the game over flag
             } else {
-                // Apply penalty for not calling UNO
-                currentPlayer.addCard(drawPile.drawCard());
-                currentPlayer.addCard(drawPile.drawCard());
-                JOptionPane.showMessageDialog(this, currentPlayer.getName() + " reached 0 cards without calling UNO! Penalty applied.", "Penalty", JOptionPane.ERROR_MESSAGE);
+                // If checkUno applied a penalty, the game continues in most cases
                 updateGameUI(); // Update UI to reflect the penalty
-                nextPlayer(); // Continue the game
             }
         }
     }
@@ -556,17 +551,15 @@ public class Session extends JFrame {
         // Only loop if the current player is still the active one and has not played a card
     }
     
-    private void checkUno(Player player) {
+    private boolean checkUno(Player player) {
         if (player.getCardCount() == 1 && !player.hasCalledUno()) {
             JOptionPane.showMessageDialog(this, player.getName() + " forgot to call UNO! Adding 2 penalty cards.", "Missed UNO!", JOptionPane.ERROR_MESSAGE);
-            for (int i = 0; i < 2; i++) {  // Apply penalty
-                if (!drawPile.isEmpty()) {
-                    player.addCard(drawPile.drawCard());
-                }
-            }
+            applyPenalty(player);
+            return false; // Return false indicating UNO was not called properly
         }
-        updateGameUI();
+        return true; // Return true if UNO was called or not needed
     }
+
 
 
 
