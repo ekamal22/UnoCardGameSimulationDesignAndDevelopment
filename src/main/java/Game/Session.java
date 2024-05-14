@@ -128,7 +128,19 @@ public class Session extends JFrame {
 
         // New Menu Item for Loading Game
         JMenuItem loadGameMenuItem = new JMenuItem("Load Game");
-        loadGameMenuItem.addActionListener(e -> loadGame());
+        loadGameMenuItem.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Text Files", "txt"));
+            int returnValue = fileChooser.showOpenDialog(null);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                try (BufferedReader in = new BufferedReader(new FileReader(selectedFile))) {
+                    loadGame(in);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(this, "Failed to load the game: " + ex.getMessage(), "Load Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
 
         // Adding items to the menu
         menu.add(profileMenuItem);
@@ -142,18 +154,21 @@ public class Session extends JFrame {
     }
 
 
+
     private void showProfile() {
         JOptionPane.showMessageDialog(this, "Show player's profile (to be implemented)", "Profile", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void saveGame() {
         try (PrintWriter out = new PrintWriter(new FileWriter("gameSave.txt"))) {
+            out.println("GameInfo");
             out.println(sessionName);
             out.println(playerCount);
             out.println(currentPlayerIndex);
             out.println(isClockwise);
             out.println(currentColor == null ? "None" : currentColor);
-            out.println(players.size());
+
+            out.println("PlayersStart");
             for (Player player : players) {
                 out.println(player.getName());
                 out.println(player.isBot());
@@ -162,22 +177,29 @@ public class Session extends JFrame {
                     out.println(card.getColor() + "," + card.getValue());
                 }
             }
-            out.println(drawPile.getCards().size());
+
+            out.println("DrawPileStart");
             for (Card card : drawPile.getCards()) {
                 out.println(card.getColor() + "," + card.getValue());
             }
-            out.println(discardPile.size());
+
+            out.println("DiscardPileStart");
             for (Card card : discardPile) {
                 out.println(card.getColor() + "," + card.getValue());
             }
+
             JOptionPane.showMessageDialog(this, "Game saved successfully.", "Game Saved", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Failed to save the game: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void loadGame() {
-        try (BufferedReader in = new BufferedReader(new FileReader("gameSave.txt"))) {
+
+    public void loadGame(BufferedReader in) {
+        try {
+            String line;
+            if ((line = in.readLine()) == null || !line.equals("GameInfo")) throw new IOException("Invalid save file format");
+
             sessionName = in.readLine();
             playerCount = Integer.parseInt(in.readLine());
             currentPlayerIndex = Integer.parseInt(in.readLine());
@@ -185,9 +207,9 @@ public class Session extends JFrame {
             currentColor = in.readLine();
             if (currentColor.equals("None")) currentColor = null;
 
-            int playerSize = Integer.parseInt(in.readLine());
+            if ((line = in.readLine()) == null || !line.equals("PlayersStart")) throw new IOException("Missing PlayersStart marker");
             players.clear();
-            for (int i = 0; i < playerSize; i++) {
+            for (int i = 0; i < playerCount; i++) {
                 String name = in.readLine();
                 boolean isBot = Boolean.parseBoolean(in.readLine());
                 int cardCount = Integer.parseInt(in.readLine());
@@ -199,35 +221,27 @@ public class Session extends JFrame {
                 players.add(player);
             }
 
-            int drawPileSize = Integer.parseInt(in.readLine());
+            if ((line = in.readLine()) == null || !line.equals("DrawPileStart")) throw new IOException("Missing DrawPileStart marker");
             List<Card> drawPileCards = new ArrayList<>();
-            for (int i = 0; i < drawPileSize; i++) {
-                String[] cardData = in.readLine().split(",");
+            while (!(line = in.readLine()).equals("DiscardPileStart")) {
+                String[] cardData = line.split(",");
                 drawPileCards.add(new Card(cardData[0], cardData[1]));
             }
             drawPile.getCards().clear();
             drawPile.getCards().addAll(drawPileCards);
 
-            int discardPileSize = Integer.parseInt(in.readLine());
             discardPile.clear();
-            for (int i = 0; i < discardPileSize; i++) {
-                String[] cardData = in.readLine().split(",");
+            while ((line = in.readLine()) != null) {
+                String[] cardData = line.split(",");
                 discardPile.add(new Card(cardData[0], cardData[1]));
             }
 
             JOptionPane.showMessageDialog(this, "Game loaded successfully!", "Game Loaded", JOptionPane.INFORMATION_MESSAGE);
             updateGameUI();
         } catch (IOException | NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Failed to load the game: " + (e.getMessage() != null ? e.getMessage() : "Unknown error"), "Load Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Failed to load the game: " + e.getMessage(), "Load Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-
-
-
-
-
-
 
     private void exitToMainMenu() {
         // Exit to main menu by opening the MainMenuPage and closing the current game session
@@ -564,6 +578,35 @@ public class Session extends JFrame {
 
     
     private void endGame() {
+        Player winningPlayer = players.get(currentPlayerIndex);
+        int totalScore = 0;
+        
+        StringBuilder scoreMessage = new StringBuilder("Game Over\n");
+
+        // First, calculate the total score from the losing players' hands
+        for (Player player : players) {
+            if (player != winningPlayer) {
+                totalScore += calculatePlayerScore(player);
+            }
+        }
+
+        // Append the winning player's score
+        scoreMessage.append(winningPlayer.getName()).append(": ").append(totalScore).append(" points\n");
+
+        // Append the losing players' scores (which are 0)
+        for (Player player : players) {
+            if (player != winningPlayer) {
+                scoreMessage.append(player.getName()).append(": 0 points\n");
+            }
+        }
+
+        // Summary message for the winning player
+        scoreMessage.append(winningPlayer.getName()).append(" wins and earns ").append(totalScore).append(" points\n");
+
+        JOptionPane.showMessageDialog(this, scoreMessage.toString(), "Game Over", JOptionPane.INFORMATION_MESSAGE);
+
+        // Optionally update the winner's total score in the leaderboard or save file
+
         // Use a timer to delay the closure of the game window, providing time to see the game over message
         Timer timer = new Timer(5000, e -> {
             dispose(); // Close the game window
@@ -573,28 +616,30 @@ public class Session extends JFrame {
         timer.start();
     }
 
-
-
-    private int calculateScore() {
+    private int calculatePlayerScore(Player player) {
         int score = 0;
-        for (Player player : players) {
-            for (Card card : player.getHand()) {
-                score += cardScore(card);
-            }
+        for (Card card : player.getHand()) {
+            score += cardScore(card);
         }
         return score;
     }
 
+    
+
 
     private int cardScore(Card card) {
-        // Define the score based on card type
         String value = card.getValue();
         if (value.equals("Draw Two") || value.equals("Reverse") || value.equals("Skip")) {
-            return 20;
+            return 20; // Action cards score
         } else if (value.equals("Wild") || value.equals("Wild Draw Four")) {
-            return 50;
+            return 50; // Wild cards score
         } else {
-            return Integer.parseInt(value); // Score for number cards
+            try {
+                return Integer.parseInt(value); // Number cards score
+            } catch (NumberFormatException e) {
+                System.err.println("Invalid card value: " + value);
+                return 0; // Default to 0 for any unexpected values
+            }
         }
     }
 

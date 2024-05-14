@@ -166,65 +166,9 @@ public class MainMenuPage extends JFrame {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(selectedFile));
-                String sessionName = reader.readLine();
-                if (sessionName == null) throw new IOException("Corrupted file: Missing session name.");
-                int playerCount = Integer.parseInt(reader.readLine());
-                int currentPlayerIndex = Integer.parseInt(reader.readLine());
-                boolean isClockwise = Boolean.parseBoolean(reader.readLine());
-                String currentColor = reader.readLine();
-
-                List<Player> players = new ArrayList<>();
-                List<Card> discardPile = new ArrayList<>();
-                Deck drawPile = new Deck();
-                drawPile.getCards().clear(); // Clear the newly initialized deck
-
-                // Load players
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    String[] playerInfo = line.split(",");
-                    if (playerInfo.length < 3) {
-                        System.err.println("Skipping player due to insufficient data: " + line);
-                        continue;
-                    }
-                    Player player = new Player(playerInfo[0], Boolean.parseBoolean(playerInfo[1]));
-                    int cardCount = Integer.parseInt(playerInfo[2]);
-                    for (int i = 0; i < cardCount; i++) {
-                        line = reader.readLine();
-                        if (line == null) throw new IOException("Corrupted file: Missing card data.");
-                        String[] cardData = line.split(",");
-                        if (cardData.length < 2) {
-                            System.err.println("Skipping card due to insufficient data: " + line);
-                            continue;
-                        }
-                        player.addCard(new Card(cardData[0], cardData[1]));
-                    }
-                    players.add(player);
-                }
-
-                // Load draw pile
-                while ((line = reader.readLine()) != null && !line.equals("DiscardPileStart")) {
-                    String[] cardData = line.split(",");
-                    if (cardData.length < 2) {
-                        System.err.println("Skipping card in draw pile due to insufficient data: " + line);
-                        continue;
-                    }
-                    drawPile.getCards().add(new Card(cardData[0], cardData[1]));
-                }
-
-                // Load discard pile
-                while ((line = reader.readLine()) != null) {
-                    String[] cardData = line.split(",");
-                    if (cardData.length < 2) {
-                        System.err.println("Skipping card in discard pile due to insufficient data: " + line);
-                        continue;
-                    }
-                    discardPile.add(new Card(cardData[0], cardData[1]));
-                }
-
-                Session loadedGameSession = new Session(sessionName, playerCount);
-                loadedGameSession.setGameState(drawPile, discardPile, players, currentPlayerIndex, isClockwise);
+            try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
+                Session loadedGameSession = new Session("Placeholder", 0); // Placeholder values, will be overwritten
+                loadedGameSession.loadGame(reader); // Load game data using the method from Session.java
                 loadedGameSession.setVisible(true);
                 this.dispose();  // Close the MainMenuPage
             } catch (IOException e) {
@@ -234,27 +178,6 @@ public class MainMenuPage extends JFrame {
     }
 
 
-
-    /*// Method to load game state from a text file
-    private Session loadGameFromTextFile(File file) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String sessionName = reader.readLine();
-        int playerCount = Integer.parseInt(reader.readLine());
-        int currentPlayerIndex = Integer.parseInt(reader.readLine());
-        boolean isClockwise = Boolean.parseBoolean(reader.readLine());
-        String currentColor = reader.readLine();
-
-        List<Player> players = new ArrayList<>();
-        List<Card> discardPile = new ArrayList<>();
-        Deck drawPile = new Deck(); // You will need to populate this based on the saved data
-        drawPile.getCards().clear();
-
-        // Additional parsing logic here to populate players, drawPile, and discardPile from the file
-
-        Session loadedGameSession = new Session(sessionName, playerCount);
-        loadedGameSession.setGameState(drawPile, discardPile, players, currentPlayerIndex, isClockwise);
-        return loadedGameSession;
-    }*/
 
 
 
