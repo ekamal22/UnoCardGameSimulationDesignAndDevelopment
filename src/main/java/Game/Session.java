@@ -320,17 +320,31 @@ public class Session extends JFrame {
             boolean wasRemoved = currentPlayer.removeCard(card);
             if (wasRemoved) {
                 discardPile.add(card);
-                updateGameUI();
 
+                // Handle wild card color selection
+                if (card.getValue().startsWith("Wild")) {
+                    if (!currentPlayer.isBot()) {
+                        currentColor = getUserSelectedColor(); // Prompt user to select color
+                    } else {
+                        currentColor = getRandomColor(); // Bot selects a random color
+                        JOptionPane.showMessageDialog(this, currentPlayer.getName() + " changes the color to " + currentColor, "Color Changed", JOptionPane.INFORMATION_MESSAGE);
+                        System.out.println(currentPlayer.getName() + " changes the color to " + currentColor);
+                    }
+                }
+
+                updateGameUI();
                 LOGGER.info("Card played. New card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
 
-                // If this was the last card, check Uno status
+                // Check if this was the last card and handle game end
                 if (currentPlayer.getCardCount() == 0) {
-                    checkUno(currentPlayer);  // This method will handle whether UNO was called and apply penalty if not
-                    if (currentPlayer.getCardCount() == 0) {  // Check if cards were added as a penalty
+                    checkUno(currentPlayer);
+                    if (currentPlayer.getCardCount() == 0) {
                         JOptionPane.showMessageDialog(this, "Congratulations, " + currentPlayer.getName() + " has won the game!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
                         LOGGER.info(currentPlayer.getName() + " wins the game.");
-                        checkGameEnd();
+                        endGame();
+                    } else {
+                        // Penalty applied, game continues
+                        nextPlayer();
                     }
                 } else {
                     nextPlayer();
@@ -342,6 +356,8 @@ public class Session extends JFrame {
             JOptionPane.showMessageDialog(this, "Invalid card played!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+
 
 
 
