@@ -43,6 +43,7 @@ public class Session extends JFrame {
     private static final Logger LOGGER = Logger.getLogger(Session.class.getName());
     private static final String LOG_FILE_PATH = "game_logs.txt";
     private String currentColor;
+    private boolean gameOver = false;
 
 
     public Session(String sessionName, int playerCount) {
@@ -234,6 +235,7 @@ public class Session extends JFrame {
     
     
     private void updateGameUI() {
+    	SwingUtilities.invokeLater(() -> {
         System.out.println("Updating Game UI");
 
         // Debugging: Print the number of cards in the draw pile and discard pile
@@ -283,6 +285,7 @@ public class Session extends JFrame {
         // Ensure UI components are refreshed
         revalidate();
         repaint();
+    	});
     }
 
 
@@ -311,7 +314,6 @@ public class Session extends JFrame {
     private void playCard(Card card) {
         Player currentPlayer = players.get(currentPlayerIndex);
         Card topCard = discardPile.get(discardPile.size() - 1);
-
         LOGGER.info("Attempting to play card. Current card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
 
         if (canPlayCard(card, topCard)) {
@@ -322,20 +324,13 @@ public class Session extends JFrame {
 
                 LOGGER.info("Card played. New card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
 
-                // Check if the player played their last card
+                // If this was the last card, check Uno status
                 if (currentPlayer.getCardCount() == 0) {
-                	System.out.println(currentPlayer.hasCalledUno());
-                    if (currentPlayer.hasCalledUno()) {
-                        // Handle the case where Uno was called correctly when playing the last card
+                    checkUno(currentPlayer);  // This method will handle whether UNO was called and apply penalty if not
+                    if (currentPlayer.getCardCount() == 0) {  // Check if cards were added as a penalty
                         JOptionPane.showMessageDialog(this, "Congratulations, " + currentPlayer.getName() + " has won the game!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
-                        LOGGER.info(currentPlayer.getName() + " wins the game with a correct Uno call.");
-                        currentPlayer.clearUnoCall(); // Clear the Uno call after a successful win
+                        LOGGER.info(currentPlayer.getName() + " wins the game.");
                         checkGameEnd();
-                    } else {
-                        // Handle the case where Uno was NOT called correctly when playing the last card
-                        applyPenalty(currentPlayer);
-                        JOptionPane.showMessageDialog(this, currentPlayer.getName() + " did not call UNO before playing the last card! Penalty applied.", "Missed UNO", JOptionPane.ERROR_MESSAGE);
-                        LOGGER.info(currentPlayer.getName() + " failed to call Uno on the last card and received a penalty.");
                     }
                 } else {
                     nextPlayer();
@@ -354,26 +349,10 @@ public class Session extends JFrame {
 
 
 
+
     
     
-    private void promptUnoCall(Player player) {
-        if (player.isBot()) {
-            // Simulate bot behavior for calling Uno
-            player.callUno();
-            LOGGER.info(player.getName() + " calls Uno automatically.");
-        } else {
-            int response = JOptionPane.showConfirmDialog(this, "Do you want to call Uno?", "Call Uno?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if (response == JOptionPane.YES_OPTION) {
-                player.callUno();
-                JOptionPane.showMessageDialog(this, "Uno called!", "Uno", JOptionPane.INFORMATION_MESSAGE);
-                LOGGER.info(player.getName() + " has called Uno.");
-            } else {
-                applyPenalty(player);
-                JOptionPane.showMessageDialog(this, player.getName() + " forgot to call Uno! Penalty applied.", "Missed Uno", JOptionPane.ERROR_MESSAGE);
-                LOGGER.info(player.getName() + " missed calling Uno and received a penalty.");
-            }
-        }
-    }
+    
 
 
 
@@ -433,12 +412,15 @@ public class Session extends JFrame {
     
     
     private void checkGameEnd() {
+        if (gameOver) return;  // If game is over, do not perform any more checks
+
         Player currentPlayer = players.get(currentPlayerIndex);
         if (currentPlayer.getCardCount() == 0) {
             if (currentPlayer.hasCalledUno()) {
                 JOptionPane.showMessageDialog(this, "Game Over, " + currentPlayer.getName() + " wins!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
                 System.out.println(currentPlayer.getName() + " wins the game!");
                 endGame();
+                gameOver = true;  // Set the game over flag
             } else {
                 // Apply penalty for not calling UNO
                 currentPlayer.addCard(drawPile.drawCard());
@@ -521,17 +503,14 @@ public class Session extends JFrame {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         Player currentPlayer = players.get(currentPlayerIndex);
 
-        // Clear Uno call at the start of a new turn if necessary
-        if (currentPlayer.hasCalledUno() && currentPlayer.getCardCount() > 1) {
-            currentPlayer.clearUnoCall();
-        }
-
         if (!currentPlayer.isBot()) {
             System.out.println("Human player's turn: " + currentPlayer.getName());
+            // Check Uno right at the beginning of the turn for the previous player
+            checkUno(players.get((currentPlayerIndex - 1 + players.size()) % players.size()));
         } else {
             playBotTurn(currentPlayer);
         }
-        updateGameUI();  // Ensure UI is updated whenever the turn changes
+        updateGameUI();
     }
 
 

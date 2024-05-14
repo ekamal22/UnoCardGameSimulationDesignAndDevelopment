@@ -30,14 +30,14 @@ public class Player implements Serializable {
     public void addCard(Card card) {
         hand.add(card);
         if (hand.size() != 1) {
-        	this.hasCalledUno = false;  // Reset UNO call when card count changes
+            this.hasCalledUno = false;  // Reset UNO call when card count changes
         }
     }
 
     public boolean removeCard(Card card) {
         boolean wasRemoved = hand.remove(card);
         if (hand.size() != 1) {
-        	this.hasCalledUno = false;  // Reset UNO call when card count changes
+            this.hasCalledUno = false;  // Reset UNO call when card count changes
         }
         return wasRemoved;
     }
