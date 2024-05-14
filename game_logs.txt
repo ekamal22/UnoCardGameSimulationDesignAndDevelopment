@@ -2902,3 +2902,101 @@ May 14, 2024 11:56:59 AM main.java.Game.Session playCard
 INFO: Card played. New card count: 0, Uno called: false
 May 14, 2024 11:57:00 AM main.java.Game.Session playCard
 INFO: User wins the game.
+May 14, 2024 12:07:46 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 7, Uno called: false
+May 14, 2024 12:07:48 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 6, Uno called: false
+May 14, 2024 12:07:51 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 13, Uno called: false
+May 14, 2024 12:07:53 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 12, Uno called: false
+May 14, 2024 12:08:47 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 7, Uno called: false
+May 14, 2024 12:08:49 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 6, Uno called: false
+May 14, 2024 12:08:50 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 12, Uno called: false
+May 14, 2024 12:08:50 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 11, Uno called: false
+May 14, 2024 12:08:59 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 6, Uno called: false
+May 14, 2024 12:08:59 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 5, Uno called: false
+May 14, 2024 12:08:59 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 11, Uno called: false
+May 14, 2024 12:08:59 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 10, Uno called: false
+May 14, 2024 12:09:02 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 10, Uno called: false
+May 14, 2024 12:09:02 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 9, Uno called: false
+May 14, 2024 12:09:08 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 6, Uno called: false
+May 14, 2024 12:09:08 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 5, Uno called: false
+May 14, 2024 12:09:08 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 9, Uno called: false
+May 14, 2024 12:09:08 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 8, Uno called: false
+May 14, 2024 12:09:12 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 5, Uno called: false
+May 14, 2024 12:09:12 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 4, Uno called: false
+May 14, 2024 12:09:12 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 8, Uno called: false
+May 14, 2024 12:09:12 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 7, Uno called: false
+May 14, 2024 12:09:19 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 4, Uno called: false
+May 14, 2024 12:09:22 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 7, Uno called: false
+May 14, 2024 12:09:22 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 6, Uno called: false
+May 14, 2024 12:09:24 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 6, Uno called: false
+May 14, 2024 12:09:24 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 5, Uno called: false
+May 14, 2024 12:09:27 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 6, Uno called: false
+May 14, 2024 12:09:27 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 5, Uno called: false
+May 14, 2024 12:09:31 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 4, Uno called: false
+May 14, 2024 12:09:31 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 3, Uno called: false
+May 14, 2024 12:09:31 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 5, Uno called: false
+May 14, 2024 12:09:31 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 4, Uno called: false
+May 14, 2024 12:09:33 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 4, Uno called: false
+May 14, 2024 12:09:33 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 3, Uno called: false
+May 14, 2024 12:09:38 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 3, Uno called: false
+May 14, 2024 12:09:38 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 2, Uno called: false
+May 14, 2024 12:09:46 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 3, Uno called: false
+May 14, 2024 12:09:46 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 2, Uno called: false
+May 14, 2024 12:09:48 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 4, Uno called: false
+May 14, 2024 12:09:48 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 3, Uno called: false
+May 14, 2024 12:09:51 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 2, Uno called: false
+May 14, 2024 12:09:51 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 1, Uno called: false
+May 14, 2024 12:09:51 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 3, Uno called: false
+May 14, 2024 12:09:51 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 2, Uno called: false
+May 14, 2024 12:09:58 PM main.java.Game.Session onUnoButtonClicked
+INFO: User has called Uno.
+May 14, 2024 12:09:59 PM main.java.Game.Session playCard
+INFO: Attempting to play card. Current card count: 1, Uno called: true
+May 14, 2024 12:09:59 PM main.java.Game.Session playCard
+INFO: Card played. New card count: 0, Uno called: false
+May 14, 2024 12:10:00 PM main.java.Game.Session playCard
+INFO: User wins the game.

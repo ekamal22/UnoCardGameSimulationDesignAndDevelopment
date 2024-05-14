@@ -321,7 +321,7 @@ public class Session extends JFrame {
             if (wasRemoved) {
                 discardPile.add(card);
 
-                // Handle wild card color selection
+                // Handle wild cards and prompt for color selection
                 if (card.getValue().startsWith("Wild")) {
                     if (!currentPlayer.isBot()) {
                         currentColor = getUserSelectedColor(); // Prompt user to select color
@@ -334,6 +334,13 @@ public class Session extends JFrame {
 
                 updateGameUI();
                 LOGGER.info("Card played. New card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
+
+                // Handle draw actions for Draw Two and Wild Draw Four
+                if (card.getValue().equals("Wild Draw Four")) {
+                    applyDraw(currentPlayerIndex + 1 % players.size(), 2);
+                } else if (card.getValue().equals("Draw Two")) {
+                    applyDraw(currentPlayerIndex + 1 % players.size(), 2);
+                }
 
                 // Check if this was the last card and handle game end
                 if (currentPlayer.getCardCount() == 0) {
@@ -356,6 +363,20 @@ public class Session extends JFrame {
             JOptionPane.showMessageDialog(this, "Invalid card played!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    private void applyDraw(int playerIndex, int cardsCount) {
+        Player player = players.get(playerIndex);
+        for (int i = 0; i < cardsCount; i++) {
+            if (drawPile.isEmpty()) {
+                reshuffleDiscardIntoDraw();
+            }
+            if (!drawPile.isEmpty()) {
+                player.addCard(drawPile.drawCard());
+            }
+        }
+        JOptionPane.showMessageDialog(this, player.getName() + " draws " + cardsCount + " cards.", "Cards Drawn", JOptionPane.INFORMATION_MESSAGE);
+    }
+
 
 
 
