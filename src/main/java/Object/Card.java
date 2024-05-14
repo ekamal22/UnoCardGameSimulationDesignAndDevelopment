@@ -1,8 +1,8 @@
 package main.java.Object;
 
-import java.io.Serializable;
 
-public class Card implements Serializable {
+
+public class Card{
     private String color;
     private String value;
     private String currentColor;  // Added to track the current active color

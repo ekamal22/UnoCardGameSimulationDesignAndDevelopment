@@ -1,12 +1,12 @@
 package main.java.Player;
 
 import main.java.Object.Card;
-import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player implements Serializable {
-    private static final long serialVersionUID = 6529685098267757690L; // Serializable ID
+public class Player{
+    
 
     private String name;
     private List<Card> hand; // Ensure Card class is also Serializable

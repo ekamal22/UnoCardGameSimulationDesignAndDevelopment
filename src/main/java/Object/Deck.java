@@ -1,11 +1,11 @@
 package main.java.Object;
-import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Deck implements Serializable {
-    private static final long serialVersionUID = 6529685098267757690L;
+public class Deck{
+    
     private List<Card> cards;
     
     public Deck() {

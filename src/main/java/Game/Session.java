@@ -147,44 +147,82 @@ public class Session extends JFrame {
     }
 
     private void saveGame() {
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("gameSave.ser"))) {
-            out.writeObject(drawPile); // Write the deck to the output stream
-            out.writeObject(discardPile); // Write the discard pile to the output stream
-            out.writeObject(players); // Write the list of players to the output stream
-            out.writeInt(currentPlayerIndex); // Write the current player index to the output stream
-            out.writeBoolean(isClockwise); // Write the game direction to the output stream
+        try (PrintWriter out = new PrintWriter(new FileWriter("gameSave.txt"))) {
+            out.println(sessionName);
+            out.println(playerCount);
+            out.println(currentPlayerIndex);
+            out.println(isClockwise);
+            out.println(currentColor == null ? "None" : currentColor);
+            out.println(players.size());
+            for (Player player : players) {
+                out.println(player.getName());
+                out.println(player.isBot());
+                out.println(player.getHand().size());
+                for (Card card : player.getHand()) {
+                    out.println(card.getColor() + "," + card.getValue());
+                }
+            }
+            out.println(drawPile.getCards().size());
+            for (Card card : drawPile.getCards()) {
+                out.println(card.getColor() + "," + card.getValue());
+            }
+            out.println(discardPile.size());
+            for (Card card : discardPile) {
+                out.println(card.getColor() + "," + card.getValue());
+            }
             JOptionPane.showMessageDialog(this, "Game saved successfully.", "Game Saved", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException e) {
-            e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Failed to save the game: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    
     private void loadGame() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new File(".")); // Ensure this is the correct path
-        fileChooser.setDialogTitle("Select Saved Game File");
-        fileChooser.setFileFilter(new FileNameExtensionFilter("UNO Save Files", "ser")); // Make sure the extension is correct
+        try (BufferedReader in = new BufferedReader(new FileReader("gameSave.txt"))) {
+            sessionName = in.readLine();
+            playerCount = Integer.parseInt(in.readLine());
+            currentPlayerIndex = Integer.parseInt(in.readLine());
+            isClockwise = Boolean.parseBoolean(in.readLine());
+            currentColor = in.readLine();
+            if (currentColor.equals("None")) currentColor = null;
 
-        int result = fileChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(selectedFile))) {
-                drawPile = (Deck) in.readObject();
-                discardPile = (List<Card>) in.readObject();
-                players = (List<Player>) in.readObject();
-                currentPlayerIndex = in.readInt();
-                isClockwise = in.readBoolean();
-
-                setGameState(drawPile, discardPile, players, currentPlayerIndex, isClockwise);
-                JOptionPane.showMessageDialog(this, "Game loaded successfully!", "Game Loaded", JOptionPane.INFORMATION_MESSAGE);
-            } catch (IOException | ClassNotFoundException ex) {
-                ex.printStackTrace(); // This will print more detailed information about the exception
-                JOptionPane.showMessageDialog(this, "Failed to load the game: " + (ex.getMessage() != null ? ex.getMessage() : "Unknown error"), "Load Error", JOptionPane.ERROR_MESSAGE);
+            int playerSize = Integer.parseInt(in.readLine());
+            players.clear();
+            for (int i = 0; i < playerSize; i++) {
+                String name = in.readLine();
+                boolean isBot = Boolean.parseBoolean(in.readLine());
+                int cardCount = Integer.parseInt(in.readLine());
+                Player player = new Player(name, isBot);
+                for (int j = 0; j < cardCount; j++) {
+                    String[] cardData = in.readLine().split(",");
+                    player.addCard(new Card(cardData[0], cardData[1]));
+                }
+                players.add(player);
             }
+
+            int drawPileSize = Integer.parseInt(in.readLine());
+            List<Card> drawPileCards = new ArrayList<>();
+            for (int i = 0; i < drawPileSize; i++) {
+                String[] cardData = in.readLine().split(",");
+                drawPileCards.add(new Card(cardData[0], cardData[1]));
+            }
+            drawPile.getCards().clear();
+            drawPile.getCards().addAll(drawPileCards);
+
+            int discardPileSize = Integer.parseInt(in.readLine());
+            discardPile.clear();
+            for (int i = 0; i < discardPileSize; i++) {
+                String[] cardData = in.readLine().split(",");
+                discardPile.add(new Card(cardData[0], cardData[1]));
+            }
+
+            JOptionPane.showMessageDialog(this, "Game loaded successfully!", "Game Loaded", JOptionPane.INFORMATION_MESSAGE);
+            updateGameUI();
+        } catch (IOException | NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Failed to load the game: " + (e.getMessage() != null ? e.getMessage() : "Unknown error"), "Load Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+
 
 
 
@@ -235,58 +273,62 @@ public class Session extends JFrame {
     
     
     private void updateGameUI() {
-    	SwingUtilities.invokeLater(() -> {
-        System.out.println("Updating Game UI");
+        SwingUtilities.invokeLater(() -> {
+            System.out.println("Updating Game UI");
 
-        // Debugging: Print the number of cards in the draw pile and discard pile
-        System.out.println("Draw Pile Size: " + drawPile.size());
-        System.out.println("Discard Pile Size: " + discardPile.size());
+            // Debugging: Print the number of cards in the draw pile and discard pile
+            System.out.println("Draw Pile Size: " + drawPile.size());
+            System.out.println("Discard Pile Size: " + discardPile.size());
 
-        // Clear and repopulate the draw pile UI
-        drawPilePanel.removeAll();
-        drawPilePanel.add(new JLabel("Cards: " + drawPile.size()), BorderLayout.CENTER);
+            // Clear and repopulate the draw pile UI
+            drawPilePanel.removeAll();
+            drawPilePanel.add(new JLabel("Cards: " + drawPile.size()), BorderLayout.CENTER);
 
-        // Clear and repopulate the discard pile UI
-        discardPilePanel.removeAll();
-        if (!discardPile.isEmpty()) {
-            Card topCard = discardPile.get(discardPile.size() - 1);
-            System.out.println("Top Discard Card: " + topCard.toString()); // Debugging: Output the top card of the discard pile
-            discardPilePanel.add(new JLabel("Top Discard: " + topCard.toString()), BorderLayout.CENTER);
-        } else {
-            System.out.println("Discard Pile is empty"); // Debugging: Indicate that the discard pile is empty
-            discardPilePanel.add(new JLabel("Discard Pile is empty"), BorderLayout.CENTER);
-        }
-
-        // Update players' hands
-        playerPanel.removeAll();
-        for (Player player : players) {
-            System.out.println(player.getName() + " has " + player.getCardCount() + " cards"); // Debugging: Output each player's card count
-            playerPanel.add(new JLabel(player.getName() + ": " + player.getCardCount() + " cards"));
-        }
-
-     // Repopulate card selection combo box
-        playCardComboBox.removeAllItems();
-        Player currentPlayer = players.get(currentPlayerIndex);
-        if (!currentPlayer.isBot()) {
-            System.out.println("Current player's turn: " + currentPlayer.getName() + ", loading cards:");
-            for (Card card : currentPlayer.getHand()) {
-                System.out.println("Adding card: " + card);
-                playCardComboBox.addItem(card);
+            // Clear and repopulate the discard pile UI
+            discardPilePanel.removeAll();
+            if (discardPile.isEmpty()) {
+                System.out.println("Discard Pile is empty");
+                discardPilePanel.add(new JLabel("Discard Pile is empty"), BorderLayout.CENTER);
+            } else {
+                Card topCard = discardPile.get(discardPile.size() - 1);
+                System.out.println("Top Discard Card: " + topCard.toString());
+                discardPilePanel.add(new JLabel("Top Discard: " + topCard.toString()), BorderLayout.CENTER);
             }
-        } else {
-            System.out.println("Bot's turn. No cards loaded in dropdown.");
-        }
 
+            // Update players' hands
+            playerPanel.removeAll();
+            for (Player player : players) {
+                System.out.println(player.getName() + " has " + player.getCardCount() + " cards");
+                playerPanel.add(new JLabel(player.getName() + ": " + player.getCardCount() + " cards"));
+            }
 
-        // Set game direction
-        directionLabel.setText("Direction: " + (isClockwise ? "Clockwise" : "Counter-Clockwise"));
-        System.out.println("Game direction: " + (isClockwise ? "Clockwise" : "Counter-Clockwise")); // Debugging: Indicate the current direction of play
-        unoButton.setEnabled(players.get(currentPlayerIndex).getCardCount() == 1);
-        // Ensure UI components are refreshed
-        revalidate();
-        repaint();
-    	});
+            // Repopulate card selection combo box
+            playCardComboBox.removeAllItems();
+            Player currentPlayer = players.get(currentPlayerIndex);
+            if (!currentPlayer.isBot()) {
+                System.out.println("Current player's turn: " + currentPlayer.getName() + ", loading cards:");
+                for (Card card : currentPlayer.getHand()) {
+                    playCardComboBox.addItem(card);
+                    System.out.println("Adding card: " + card);
+                }
+            } else {
+                System.out.println("Bot's turn. No cards loaded in dropdown.");
+            }
+
+            // Set game direction
+            directionLabel.setText("Direction: " + (isClockwise ? "Clockwise" : "Counter-Clockwise"));
+            System.out.println("Game direction: " + (isClockwise ? "Clockwise" : "Counter-Clockwise"));
+            unoButton.setEnabled(players.get(currentPlayerIndex).getCardCount() == 1);
+
+            // Ensure UI components are refreshed
+            revalidate();
+            repaint();
+        });
     }
+
+
+
+
 
 
 
@@ -314,7 +356,7 @@ public class Session extends JFrame {
     private void playCard(Card card) {
         Player currentPlayer = players.get(currentPlayerIndex);
         Card topCard = discardPile.get(discardPile.size() - 1);
-        LOGGER.info("Attempting to play card. Current card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
+        LOGGER.info("Attempting to play card: " + card + ". Current card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
 
         if (canPlayCard(card, topCard)) {
             boolean wasRemoved = currentPlayer.removeCard(card);
@@ -332,15 +374,25 @@ public class Session extends JFrame {
                     }
                 }
 
-                updateGameUI();
-                LOGGER.info("Card played. New card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
+                // Handle Reverse and Skip actions
+                if (card.getValue().equals("Reverse")) {
+                    isClockwise = !isClockwise; // Toggle game direction
+                    JOptionPane.showMessageDialog(this, "Game direction reversed!", "Reverse Card", JOptionPane.INFORMATION_MESSAGE);
+                } else if (card.getValue().equals("Skip")) {
+                    JOptionPane.showMessageDialog(this, currentPlayer.getName() + " plays Skip! Next player loses turn.", "Skip Card", JOptionPane.INFORMATION_MESSAGE);
+                    skipNextPlayer(); // Advances to the next player, skipping one
+                    return; // Return early to prevent further action
+                }
 
                 // Handle draw actions for Draw Two and Wild Draw Four
                 if (card.getValue().equals("Wild Draw Four")) {
-                    applyDraw(currentPlayerIndex + 1 % players.size(), 2);
+                    applyDraw(nextPlayerIndex(), 4); // Apply four cards to the next player
                 } else if (card.getValue().equals("Draw Two")) {
-                    applyDraw(currentPlayerIndex + 1 % players.size(), 2);
+                    applyDraw(nextPlayerIndex(), 2); // Apply two cards to the next player
                 }
+
+                updateGameUI();
+                LOGGER.info("Card played. New card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
 
                 // Check if this was the last card and handle game end
                 if (currentPlayer.getCardCount() == 0) {
@@ -349,9 +401,6 @@ public class Session extends JFrame {
                         JOptionPane.showMessageDialog(this, "Congratulations, " + currentPlayer.getName() + " has won the game!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
                         LOGGER.info(currentPlayer.getName() + " wins the game.");
                         endGame();
-                    } else {
-                        // Penalty applied, game continues
-                        nextPlayer();
                     }
                 } else {
                     nextPlayer();
@@ -363,6 +412,24 @@ public class Session extends JFrame {
             JOptionPane.showMessageDialog(this, "Invalid card played!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+
+    private int nextPlayerIndex() {
+        int nextIndex = (currentPlayerIndex + (isClockwise ? 1 : -1)) % players.size();
+        if (nextIndex < 0) {
+            nextIndex += players.size(); // Correct for negative index wrap-around
+        }
+        return nextIndex;
+    }
+
+
+    private void skipNextPlayer() {
+        currentPlayerIndex = nextPlayerIndex(); // Advance to the next player
+        currentPlayerIndex = nextPlayerIndex(); // Skip the next player due to Skip card
+        LOGGER.info("Skipping player: " + players.get(currentPlayerIndex).getName());
+        updateGameUI();
+    }
+
 
     private void applyDraw(int playerIndex, int cardsCount) {
         Player player = players.get(playerIndex);
