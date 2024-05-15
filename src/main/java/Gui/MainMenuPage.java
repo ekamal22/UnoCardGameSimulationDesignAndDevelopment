@@ -1,13 +1,3 @@
-/************** Pledge of Honor ******************************************
-I hereby certify that I have completed this programming project on my own
-without any help from anyone else. The effort in the project thus belongs
-completely to me. I did not search for a solution, or I did not consult any
-program written by others or did not copy any program from other sources. I
-read and followed the guidelines provided in the project description.
-READ AND SIGN BY WRITING YOUR NAME SURNAME AND STUDENT ID
-SIGNATURE: <Effendi Jabid Kamal, 0082496>
-*************************************************************************/
-
 package main.java.Gui;
 
 import javax.swing.*;
@@ -78,40 +68,65 @@ public class MainMenuPage extends JFrame {
     private void loadLeaderboardData() {
         File file = new File("C:\\Users\\Effendi Jabid Kamal\\eclipse-workspace\\UnoCardGameSimulationDesignAndDevelopment\\src\\main\\java\\DataFiles\\users.txt");
         usersData = new ArrayList<>();
-        savedSessions = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] details = line.split(",");
-                if (details.length >= 4) {
-                    String email = details[0];
-                    int totalScore = 0; // Default to zero if parsing fails
-                    int wins = 0;
-                    int losses = 0;
-                    int gamesPlayed = 0;
-
-                    try {
-                        totalScore = Integer.parseInt(details.length > 3 ? details[3] : "0");
-                        wins = Integer.parseInt(details.length > 4 ? details[4] : "0");
-                        losses = Integer.parseInt(details.length > 5 ? details[5] : "0");
-                        gamesPlayed = Integer.parseInt(details.length > 6 ? details[6] : "0");
-                    } catch (NumberFormatException e) {
-                        // Log the exception and continue with default values
-                        System.err.println("Error parsing user data for " + email + ": " + e.getMessage());
-                    }
-
-                    UserData user = new UserData(email, totalScore, wins, losses, gamesPlayed);
-                    usersData.add(user);
-                    leaderboardModel.addRow(new Object[]{email, totalScore});
-                } else {
-                    System.err.println("Skipping malformed line: " + line);
+                
+                // Check if the line has exactly 8 elements
+                if (details.length != 8) {
+                    System.err.println("Skipping malformed line (wrong number of elements): " + line);
+                    continue;
                 }
+                
+                String email = details[0];
+                String password = details[1];
+                String sex = details[2];
+                String age = details[3];
+                int totalScore;
+                int wins;
+                int losses;
+                int gamesPlayed;
+
+                try {
+                    totalScore = Integer.parseInt(details[4]);
+                } catch (NumberFormatException e) {
+                    System.err.println("Skipping malformed line (invalid totalScore): " + line);
+                    continue;
+                }
+
+                try {
+                    wins = Integer.parseInt(details[5]);
+                } catch (NumberFormatException e) {
+                    System.err.println("Skipping malformed line (invalid wins): " + line);
+                    continue;
+                }
+
+                try {
+                    losses = Integer.parseInt(details[6]);
+                } catch (NumberFormatException e) {
+                    System.err.println("Skipping malformed line (invalid losses): " + line);
+                    continue;
+                }
+
+                try {
+                    gamesPlayed = Integer.parseInt(details[7]);
+                } catch (NumberFormatException e) {
+                    System.err.println("Skipping malformed line (invalid gamesPlayed): " + line);
+                    continue;
+                }
+
+                UserData user = new UserData(email, password, sex, age, totalScore, wins, losses, gamesPlayed);
+                usersData.add(user);
+                leaderboardModel.addRow(new Object[]{email, totalScore});
             }
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error loading leaderboard data", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+
 
     private void showUserStats() {
         int selectedRow = leaderboardTable.getSelectedRow();
@@ -124,6 +139,8 @@ public class MainMenuPage extends JFrame {
                     + "Wins: " + user.getWins() + "\n"
                     + "Losses: " + user.getLosses() + "\n"
                     + "Games Played: " + user.getGamesPlayed() + "\n"
+                    + "Average Score per Game: " + user.getAverageScore() + "\n"
+                    + "Win/Loss Ratio: " + user.getWinLossRatio() + "\n"
                 );
             }
         }
@@ -145,7 +162,7 @@ public class MainMenuPage extends JFrame {
             try {
                 int playerCount = Integer.parseInt(playerCountStr);
                 if (playerCount >= 2 && playerCount <= 10) {
-                    new Session(sessionName, playerCount);
+                    new Session(sessionName, playerCount, usersData.get(0).getUsername()); // Pass human player's email
                     savedSessions.add(sessionName);
                     dispose();
                 } else {
@@ -167,7 +184,7 @@ public class MainMenuPage extends JFrame {
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
-                Session loadedGameSession = new Session("Placeholder", 0); // Placeholder values, will be overwritten
+                Session loadedGameSession = new Session("Placeholder", 0, usersData.get(0).getUsername()); // Pass human player's email
                 loadedGameSession.loadGame(reader); // Load game data using the method from Session.java
                 loadedGameSession.setVisible(true);
                 this.dispose();  // Close the MainMenuPage
@@ -176,11 +193,6 @@ public class MainMenuPage extends JFrame {
             }
         }
     }
-
-
-
-
-
 
     private void logOut() {
         new LoginPage();

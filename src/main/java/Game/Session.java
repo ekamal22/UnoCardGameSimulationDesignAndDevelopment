@@ -4,6 +4,7 @@ import main.java.Gui.MainMenuPage; // Make sure to import MainMenuPage
 import main.java.Player.Player;
 import main.java.Object.Card;
 import main.java.Object.Deck;
+import main.java.User.UserData;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -22,6 +23,7 @@ import java.io.ObjectOutputStream;
 public class Session extends JFrame {
     private String sessionName;
     private int playerCount;
+    private String humanPlayerEmail;  // Track human player's email
     private JLabel sessionNameLabel;
     private JLabel directionLabel;
     private JPanel playerPanel;
@@ -46,9 +48,10 @@ public class Session extends JFrame {
     private boolean gameOver = false;
 
 
-    public Session(String sessionName, int playerCount) {
+    public Session(String sessionName, int playerCount, String humanPlayerEmail) {
         this.sessionName = sessionName;
         this.playerCount = playerCount;
+        this.humanPlayerEmail = humanPlayerEmail;
         this.players = new ArrayList<>();
         this.drawPile = new Deck(); // Initialize the deck
         this.discardPile = new ArrayList<>(); // Initialize the discard pile
@@ -279,11 +282,6 @@ public class Session extends JFrame {
         }
     }
 
-    private void initializeGameState() {
-        drawPile.shuffleDeck();
-        discardPile.add(drawPile.drawCard()); // Ensure this is not null
-        updateGameUI(); // Make sure this is called after setting up the game state
-    }
     
     
     private void updateGameUI() {
@@ -580,7 +578,7 @@ public class Session extends JFrame {
     private void endGame() {
         Player winningPlayer = players.get(currentPlayerIndex);
         int totalScore = 0;
-        
+
         StringBuilder scoreMessage = new StringBuilder("Game Over\n");
 
         // First, calculate the total score from the losing players' hands
@@ -605,7 +603,8 @@ public class Session extends JFrame {
 
         JOptionPane.showMessageDialog(this, scoreMessage.toString(), "Game Over", JOptionPane.INFORMATION_MESSAGE);
 
-        // Optionally update the winner's total score in the leaderboard or save file
+        // Update leaderboard
+        updateLeaderboard(winningPlayer, totalScore);
 
         // Use a timer to delay the closure of the game window, providing time to see the game over message
         Timer timer = new Timer(5000, e -> {
@@ -616,6 +615,49 @@ public class Session extends JFrame {
         timer.start();
     }
 
+    private void updateLeaderboard(Player winningPlayer, int score) {
+        File file = new File("C:\\Users\\Effendi Jabid Kamal\\eclipse-workspace\\UnoCardGameSimulationDesignAndDevelopment\\src\\main\\java\\DataFiles\\users.txt");
+        List<UserData> usersData = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] details = line.split(",");
+                if (details.length >= 8) { // Ensure to match the new format
+                    String email = details[0];
+                    String password = details[1];
+                    String sex = details[2];
+                    String age = details[3];
+                    int totalScore = Integer.parseInt(details[4]);
+                    int wins = Integer.parseInt(details[5]);
+                    int losses = Integer.parseInt(details[6]);
+                    int gamesPlayed = Integer.parseInt(details[7]);
+
+                    UserData user = new UserData(email, password, sex, age, totalScore, wins, losses, gamesPlayed);
+                    if (winningPlayer.getName().equals("User") && email.equals(humanPlayerEmail)) {
+                        user.addWin(score);
+                    } else if (winningPlayer.getName().equals(email)) {
+                        user.addWin(score);
+                    } else {
+                        user.addLoss();
+                    }
+                    usersData.add(user);
+                }
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error loading user data", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+            for (UserData user : usersData) {
+                writer.println(user.getUsername() + "," + user.getPassword() + "," + user.getSex() + "," + user.getAge() + "," + user.getTotalScore() + "," + user.getWins() + "," + user.getLosses() + "," + user.getGamesPlayed());
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error saving user data", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
     private int calculatePlayerScore(Player player) {
         int score = 0;
         for (Card card : player.getHand()) {
@@ -623,9 +665,6 @@ public class Session extends JFrame {
         }
         return score;
     }
-
-    
-
 
     private int cardScore(Card card) {
         String value = card.getValue();
@@ -790,3 +829,4 @@ public class Session extends JFrame {
 
     
 }
+

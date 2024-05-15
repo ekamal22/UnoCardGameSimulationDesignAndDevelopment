@@ -31,8 +31,14 @@ public class RegistrationHandler {
             return;
         }
 
+        // Initialize user statistics
+        int totalScore = 0;
+        int wins = 0;
+        int losses = 0;
+        int gamesPlayed = 0;
+
         // Save user details
-        String userDetails = email + "," + password + "," + sex + "," + age + "\n";
+        String userDetails = email + "," + password + "," + sex + "," + age + "," + totalScore + "," + wins + "," + losses + "," + gamesPlayed + "\n";
         try {
             File file = new File("C:\\Users\\Effendi Jabid Kamal\\eclipse-workspace\\UnoCardGameSimulationDesignAndDevelopment\\src\\main\\java\\DataFiles\\users.txt");
             FileWriter writer = new FileWriter(file, true);

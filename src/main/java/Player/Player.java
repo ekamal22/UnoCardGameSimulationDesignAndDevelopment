@@ -9,8 +9,8 @@ public class Player{
     
 
     private String name;
-    private List<Card> hand; // Ensure Card class is also Serializable
-    private boolean isBot; // Primitive data type is naturally serializable
+    private List<Card> hand; 
+    private boolean isBot; 
     private boolean hasCalledUno = false; // Field to track if UNO has been called
 
 
@@ -21,7 +21,7 @@ public class Player{
         this.hasCalledUno = false;
     }
 
-    // Ensure all getters, setters, and methods do not affect serialization
+    
 
     public String getName() {
         return name;
