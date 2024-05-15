@@ -47,7 +47,7 @@ public class Session extends JFrame {
     private String currentColor;
     private boolean gameOver = false;
 
-
+    // Constructor to initialize the game session
     public Session(String sessionName, int playerCount, String humanPlayerEmail) {
         this.sessionName = sessionName;
         this.playerCount = playerCount;
@@ -56,7 +56,7 @@ public class Session extends JFrame {
         this.drawPile = new Deck(); // Initialize the deck
         this.discardPile = new ArrayList<>(); // Initialize the discard pile
         this.currentColor = null;
-        
+
         setupLogger();
         setupMenu();
         setTitle("UNO Game - " + sessionName);
@@ -67,9 +67,9 @@ public class Session extends JFrame {
         initializeGame(); // Now it's safe to call initializeGame
         setVisible(true);
     }
-    
+
+    // Method to set up the UI components for the game session
     private void setupUIComponents() {
-        // Initialize all UI components here
         drawPilePanel = new JPanel(new BorderLayout());
         discardPilePanel = new JPanel(new BorderLayout());
         playerPanel = new JPanel(new GridLayout(playerCount + 1, 1)); // +1 for the main player
@@ -95,7 +95,6 @@ public class Session extends JFrame {
         playCardButton = new JButton("Play Card");
         skipTurnButton = new JButton("Skip Turn");
         skipTurnButton.addActionListener(e -> skipTurn());
-        
 
         bottomPanel.add(unoButton);
         bottomPanel.add(callOutButton);
@@ -103,7 +102,7 @@ public class Session extends JFrame {
         bottomPanel.add(playCardComboBox);
         bottomPanel.add(playCardButton);
         bottomPanel.add(skipTurnButton);
-        
+
         mainPanel.add(topPanel, BorderLayout.NORTH);
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
@@ -111,7 +110,8 @@ public class Session extends JFrame {
         add(mainPanel);
         setupButtonListeners();
     }
-    
+
+    // Method to set up the menu for the game session
     private void setupMenu() {
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("Menu");
@@ -156,12 +156,12 @@ public class Session extends JFrame {
         setJMenuBar(menuBar);
     }
 
-
-
+    // Method to display the player's profile
     private void showProfile() {
         JOptionPane.showMessageDialog(this, "Show player's profile (to be implemented)", "Profile", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    // Method to save the current game state to a file
     private void saveGame() {
         try (PrintWriter out = new PrintWriter(new FileWriter("gameSave.txt"))) {
             out.println("GameInfo");
@@ -197,7 +197,7 @@ public class Session extends JFrame {
         }
     }
 
-
+    // Method to load a saved game state from a file
     public void loadGame(BufferedReader in) {
         try {
             String line;
@@ -246,19 +246,20 @@ public class Session extends JFrame {
         }
     }
 
+    // Method to exit to the main menu
     private void exitToMainMenu() {
-        // Exit to main menu by opening the MainMenuPage and closing the current game session
-        new MainMenuPage();
+        new MainMenuPage(); // Exit to main menu by opening the MainMenuPage and closing the current game session
         dispose();
     }
-    
+
+    // Method to skip the current player's turn
     private void skipTurn() {
         System.out.println("Turn skipped by " + players.get(currentPlayerIndex).getName());
         nextPlayer();
         updateGameUI();
     }
-    
 
+    // Method to initialize the game
     private void initializeGame() {
         drawPile.shuffleDeck(); // Ensure this method is correctly shuffling the cards
         initializePlayers();    // Make sure players are getting their cards
@@ -267,7 +268,8 @@ public class Session extends JFrame {
         isClockwise = true; // Game direction
         updateGameUI(); // Update UI to reflect the initial game state
     }
-    
+
+    // Method to initialize the players
     private void initializePlayers() {
         for (int i = 0; i < playerCount; i++) {
             Player player = new Player(i == 0 ? "User" : "Bot " + i, i != 0);
@@ -282,8 +284,7 @@ public class Session extends JFrame {
         }
     }
 
-    
-    
+    // Method to update the game UI
     private void updateGameUI() {
         SwingUtilities.invokeLater(() -> {
             System.out.println("Updating Game UI");
@@ -338,13 +339,7 @@ public class Session extends JFrame {
         });
     }
 
-
-
-
-
-
-
-    
+    // Method to set up the logger for the game session
     private void setupLogger() {
         try {
             FileHandler handler = new FileHandler(LOG_FILE_PATH, true);
@@ -355,8 +350,7 @@ public class Session extends JFrame {
         }
     }
 
-    
-
+    // Method to handle the event when the play card button is clicked
     private void playSelectedCard() {
         System.out.println("Play Card Button Clicked");
         Card card = (Card) playCardComboBox.getSelectedItem();
@@ -365,6 +359,7 @@ public class Session extends JFrame {
         }
     }
 
+    // Method to play a card
     private void playCard(Card card) {
         Player currentPlayer = players.get(currentPlayerIndex);
         Card topCard = discardPile.get(discardPile.size() - 1);
@@ -375,7 +370,7 @@ public class Session extends JFrame {
             if (wasRemoved) {
                 discardPile.add(card);
 
-                // Handle wild cards and prompt for color selection
+                // Handling wild cards and prompt for color selection
                 if (card.getValue().startsWith("Wild")) {
                     if (!currentPlayer.isBot()) {
                         currentColor = getUserSelectedColor(); // Prompt user to select color
@@ -386,9 +381,9 @@ public class Session extends JFrame {
                     }
                 }
 
-                // Handle Reverse and Skip actions
+                // Handling Reverse and Skip actions
                 if (card.getValue().equals("Reverse")) {
-                    isClockwise = !isClockwise; // Toggle game direction
+                    isClockwise = !isClockwise; // swap game direction
                     JOptionPane.showMessageDialog(this, "Game direction reversed!", "Reverse Card", JOptionPane.INFORMATION_MESSAGE);
                 } else if (card.getValue().equals("Skip")) {
                     JOptionPane.showMessageDialog(this, currentPlayer.getName() + " plays Skip! Next player loses turn.", "Skip Card", JOptionPane.INFORMATION_MESSAGE);
@@ -425,7 +420,7 @@ public class Session extends JFrame {
         }
     }
 
-
+    // Method to get the index of the next player
     private int nextPlayerIndex() {
         int nextIndex = (currentPlayerIndex + (isClockwise ? 1 : -1)) % players.size();
         if (nextIndex < 0) {
@@ -434,7 +429,7 @@ public class Session extends JFrame {
         return nextIndex;
     }
 
-
+    // Method to skip the next player's turn
     private void skipNextPlayer() {
         currentPlayerIndex = nextPlayerIndex(); // Advance to the next player
         currentPlayerIndex = nextPlayerIndex(); // Skip the next player due to Skip card
@@ -442,7 +437,7 @@ public class Session extends JFrame {
         updateGameUI();
     }
 
-
+    // Method to apply the draw card action
     private void applyDraw(int playerIndex, int cardsCount) {
         Player player = players.get(playerIndex);
         for (int i = 0; i < cardsCount; i++) {
@@ -456,31 +451,13 @@ public class Session extends JFrame {
         JOptionPane.showMessageDialog(this, player.getName() + " draws " + cardsCount + " cards.", "Cards Drawn", JOptionPane.INFORMATION_MESSAGE);
     }
 
-
-
-
-
-
-
-
-
-
-
-    
-    
-    
-
-
-
-
-
-
-
+    // Method to get a random color
     private String getRandomColor() {
         String[] colors = {"Red", "Yellow", "Blue", "Green"};
         return colors[new Random().nextInt(colors.length)];
     }
 
+    // Method to get the user-selected color
     private String getUserSelectedColor() {
         Object[] options = {"Red", "Yellow", "Blue", "Green"};
         int n = JOptionPane.showOptionDialog(this, "Choose a color:", "Wild Card Played",
@@ -488,8 +465,7 @@ public class Session extends JFrame {
         return options[n].toString();
     }
 
-
-
+    // Method to check if a card can be played
     private boolean canPlayCard(Card card, Card topCard) {
         if (card.getValue().startsWith("Wild")) {
             return true; // Wild cards can always be played
@@ -509,9 +485,7 @@ public class Session extends JFrame {
         return false;
     }
 
-
-
-
+    // Method for drawing a card for the current player
     private void drawCard() {
         Player currentPlayer = players.get(currentPlayerIndex);
         if (!drawPile.isEmpty()) {
@@ -525,11 +499,10 @@ public class Session extends JFrame {
         nextPlayer();
     }
 
-    
-    
+    // Method to check if the game should end
     private void checkGameEnd() {
         Player currentPlayer = players.get(currentPlayerIndex);
-        // Check if game should end based on current player's card count
+        // Checking if game should end based on current player's card count
         if (currentPlayer.getCardCount() == 0) {
             if (checkUno(currentPlayer)) {
                 // If UNO was called or not needed, congratulate and end game
@@ -537,61 +510,58 @@ public class Session extends JFrame {
                 System.out.println(currentPlayer.getName() + " wins the game!");
                 endGame();
             } else {
-                // If checkUno applied a penalty, the game continues in most cases
-                updateGameUI(); // Update UI to reflect the penalty
+                // If checkUno applied a penalty, the game continues
+                updateGameUI(); // Updating UI to reflect the penalty
             }
         }
     }
-    
-    
-    
 
-
+    // Penalty method
     private void applyPenalty(Player player) {
         for (int i = 0; i < 2; i++) {
             if (drawPile.isEmpty()) {
-                reshuffleDiscardIntoDraw(); // Reshuffle if the draw pile is empty before drawing a penalty card
+                reshuffleDiscardIntoDraw(); // Reshuffling if the draw pile is empty before drawing a penalty card
             }
             if (!drawPile.isEmpty()) {
                 player.addCard(drawPile.drawCard());
             }
         }
-        updateGameUI(); // Update the UI after applying the penalty
+        updateGameUI(); // Updating the UI after applying the penalty
     }
 
+    // reshuffle the discard pile into the draw pile
     private void reshuffleDiscardIntoDraw() {
         if (discardPile.size() > 1) {
-            Card lastCard = discardPile.remove(discardPile.size() - 1); // Preserve the last card on the discard pile
-            drawPile.getCards().addAll(discardPile); // Move all other cards to the draw pile
-            drawPile.shuffleDeck(); // Shuffle the new draw pile
+            Card lastCard = discardPile.remove(discardPile.size() - 1); // Preserving the last card on the discard pile
+            drawPile.getCards().addAll(discardPile); // Moving all other cards to the draw pile
+            drawPile.shuffleDeck(); // Shuffling the new draw pile
             discardPile.clear();
-            discardPile.add(lastCard); // Put the last card back on the discard pile
+            discardPile.add(lastCard); // Putting the last card back on the discard pile
         } else {
-            // Handle potential edge case where there is no card to reshuffle
+            // Handling the potential edge case where there is no card to reshuffle
             JOptionPane.showMessageDialog(this, "No cards left to reshuffle!", "Reshuffle Error", JOptionPane.ERROR_MESSAGE);
         }
-        updateGameUI(); // Update the UI after reshuffling
+        updateGameUI(); // Updating the UI after reshuffling
     }
 
-
-    
+    // logic to end the game and to update the leaderboard
     private void endGame() {
         Player winningPlayer = players.get(currentPlayerIndex);
         int totalScore = 0;
 
         StringBuilder scoreMessage = new StringBuilder("Game Over\n");
 
-        // First, calculate the total score from the losing players' hands
+        //calculating the total score from the losing players' hands
         for (Player player : players) {
             if (player != winningPlayer) {
                 totalScore += calculatePlayerScore(player);
             }
         }
 
-        // Append the winning player's score
+        // Appending the winning player's score
         scoreMessage.append(winningPlayer.getName()).append(": ").append(totalScore).append(" points\n");
 
-        // Append the losing players' scores (which are 0)
+        // Appending the losing players' scores (which are 0)
         for (Player player : players) {
             if (player != winningPlayer) {
                 scoreMessage.append(player.getName()).append(": 0 points\n");
@@ -606,15 +576,16 @@ public class Session extends JFrame {
         // Update leaderboard
         updateLeaderboard(winningPlayer, totalScore);
 
-        // Use a timer to delay the closure of the game window, providing time to see the game over message
+        // Using a timer to delay the closure of the game window which gives time to see the game over message
         Timer timer = new Timer(5000, e -> {
-            dispose(); // Close the game window
-            new MainMenuPage(); // Optionally, redirect to the main menu
+            dispose(); // Closes the game window
+            new MainMenuPage(); // redirects to the main menu
         });
         timer.setRepeats(false);
         timer.start();
     }
 
+    // updating the leaderboard with the latest game results
     private void updateLeaderboard(Player winningPlayer, int score) {
         File file = new File("C:\\Users\\Effendi Jabid Kamal\\eclipse-workspace\\UnoCardGameSimulationDesignAndDevelopment\\src\\main\\java\\DataFiles\\users.txt");
         List<UserData> usersData = new ArrayList<>();
@@ -623,7 +594,7 @@ public class Session extends JFrame {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] details = line.split(",");
-                if (details.length >= 8) { // Ensure to match the new format
+                if (details.length >= 8) { // to ensure it matches the new format
                     String email = details[0];
                     String password = details[1];
                     String sex = details[2];
@@ -657,7 +628,7 @@ public class Session extends JFrame {
         }
     }
 
-
+    // Method to calculate the score of a player's hand
     private int calculatePlayerScore(Player player) {
         int score = 0;
         for (Card card : player.getHand()) {
@@ -666,6 +637,7 @@ public class Session extends JFrame {
         return score;
     }
 
+    // Method to get the score value of a card
     private int cardScore(Card card) {
         String value = card.getValue();
         if (value.equals("Draw Two") || value.equals("Reverse") || value.equals("Skip")) {
@@ -682,13 +654,14 @@ public class Session extends JFrame {
         }
     }
 
+    // Logic for progressing to the next player's turn
     private void nextPlayer() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         Player currentPlayer = players.get(currentPlayerIndex);
 
         if (!currentPlayer.isBot()) {
             System.out.println("Human player's turn: " + currentPlayer.getName());
-            // Check Uno right at the beginning of the turn for the previous player
+            // For checking Uno right at the beginning of the turn for the last player
             checkUno(players.get((currentPlayerIndex - 1 + players.size()) % players.size()));
         } else {
             playBotTurn(currentPlayer);
@@ -696,11 +669,7 @@ public class Session extends JFrame {
         updateGameUI();
     }
 
-
-
-
-
-    
+    // Method which handles the current player's turn
     private void playTurn() {
         Player currentPlayer = players.get(currentPlayerIndex);
         Card topCard = discardPile.get(discardPile.size() - 1);
@@ -709,16 +678,14 @@ public class Session extends JFrame {
         if (cardToPlay != null) {
             playCard(cardToPlay);
         } else {
-            drawCardUntilPlayable(topCard, currentPlayer);  // Include currentPlayer here
+            drawCardUntilPlayable(topCard, currentPlayer);  
         }
 
         checkGameEnd();
         nextPlayer();
     }
 
-
-    
-    
+    // Method which draw cards until a playable card is found
     private void drawCardUntilPlayable(Card topCard, Player currentPlayer) {
         boolean cardPlayed = false;
         do {
@@ -731,30 +698,29 @@ public class Session extends JFrame {
             }
             currentPlayer.addCard(drawnCard);
             if (canPlayCard(drawnCard, topCard)) {
-                // Optionally play the drawn card immediately if it's playable
+                // (extra feature!): To optionally play the drawn card immediately if it's playable
                 playCard(drawnCard);
                 cardPlayed = true;
             }
         } while (!cardPlayed && currentPlayer == players.get(currentPlayerIndex));
         // Only loop if the current player is still the active one and has not played a card
     }
-    
+
+    // Method to check if a player has called UNO
     private boolean checkUno(Player player) {
         if (player.getCardCount() == 1 && !player.hasCalledUno()) {
             JOptionPane.showMessageDialog(this, player.getName() + " forgot to call UNO! Adding 2 penalty cards.", "Missed UNO!", JOptionPane.ERROR_MESSAGE);
             applyPenalty(player);
-            return false; // Return false indicating UNO was not called properly
+            return false; // Return false which indicates UNO was not called properly
         }
-        return true; // Return true if UNO was called or not needed
+        return true; // Return true if UNO was called 
     }
 
-
-
-
+    // Method to handle the bot's turn
     private void playBotTurn(Player bot) {
         Card topCard = discardPile.get(discardPile.size() - 1);
         Card cardToPlay = bot.findPlayableCard(topCard);
-        
+
         if (cardToPlay != null) {
             System.out.println(bot.getName() + " is playing " + cardToPlay);
             playCard(cardToPlay);
@@ -776,7 +742,7 @@ public class Session extends JFrame {
         checkGameEnd();
     }
 
-
+    // Method which handles the event when the UNO button is clicked
     private void onUnoButtonClicked() {
         Player currentPlayer = players.get(currentPlayerIndex);
         if (currentPlayer.getCardCount() == 1) { // Player is about to play the last card
@@ -788,11 +754,7 @@ public class Session extends JFrame {
         }
     }
 
-
-
-
-
-
+    // Method which handles the event when the Call Out button is clicked
     private void onCallOutButtonClicked() {
         System.out.println("Call Out Button Clicked");
         Player currentPlayer = players.get(currentPlayerIndex);
@@ -806,20 +768,18 @@ public class Session extends JFrame {
         }
         updateGameUI();
     }
-    
-    
 
-    
+    // Method to set the game state
     public void setGameState(Deck drawPile, List<Card> discardPile, List<Player> players, int currentPlayerIndex, boolean isClockwise) {
         this.drawPile = drawPile;
         this.discardPile = discardPile;
         this.players = players;
         this.currentPlayerIndex = currentPlayerIndex;
         this.isClockwise = isClockwise;
-        updateGameUI();  // Ensure the UI reflects the loaded state
+        updateGameUI();  // Ensuring the UI reflects the loaded state
     }
 
-    
+    // Method to set up button listeners for the game
     private void setupButtonListeners() {
         unoButton.addActionListener(e -> onUnoButtonClicked());
         callOutButton.addActionListener(e -> onCallOutButtonClicked());
@@ -827,6 +787,4 @@ public class Session extends JFrame {
         playCardButton.addActionListener(e -> playSelectedCard());
     }
 
-    
 }
-

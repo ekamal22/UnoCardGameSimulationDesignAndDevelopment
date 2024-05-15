@@ -45,7 +45,6 @@ public class MainMenuPage extends JFrame {
         newGameButton.addActionListener(e -> startNewGame());
         JButton continueGameButton = new JButton("Continue Game");
         continueGameButton.addActionListener(e -> continueExistingGame());
-       
 
         JButton logOutButton = new JButton("Log Out");
         logOutButton.addActionListener(e -> logOut());
@@ -65,6 +64,7 @@ public class MainMenuPage extends JFrame {
         setVisible(true);
     }
 
+    // Load leaderboard data from a file
     private void loadLeaderboardData() {
         File file = new File("C:\\Users\\Effendi Jabid Kamal\\eclipse-workspace\\UnoCardGameSimulationDesignAndDevelopment\\src\\main\\java\\DataFiles\\users.txt");
         usersData = new ArrayList<>();
@@ -126,8 +126,7 @@ public class MainMenuPage extends JFrame {
         }
     }
 
-
-
+    // Display the user statistics when a user is selected from the leaderboard
     private void showUserStats() {
         int selectedRow = leaderboardTable.getSelectedRow();
         if (selectedRow != -1) {
@@ -146,6 +145,7 @@ public class MainMenuPage extends JFrame {
         }
     }
 
+    // Find a user by their username (email) from the list of user data
     private UserData findUserByUsername(String username) {
         for (UserData user : usersData) {
             if (user.getUsername().equals(username)) {
@@ -155,6 +155,7 @@ public class MainMenuPage extends JFrame {
         return null;
     }
 
+    // Start a new game session
     private void startNewGame() {
         String sessionName = JOptionPane.showInputDialog(this, "Enter Session Name:", "New Game", JOptionPane.QUESTION_MESSAGE);
         if (sessionName != null && !sessionName.trim().isEmpty()) {
@@ -174,6 +175,7 @@ public class MainMenuPage extends JFrame {
         }
     }
 
+    // Continue an existing game session
     private void continueExistingGame() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File("."));
@@ -194,11 +196,13 @@ public class MainMenuPage extends JFrame {
         }
     }
 
+    // Log out and return to the login page
     private void logOut() {
         new LoginPage();
         dispose();
     }
 
+    // Main method to start the MainMenuPage
     public static void main(String[] args) {
         new MainMenuPage();
     }
