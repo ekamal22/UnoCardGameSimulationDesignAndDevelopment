@@ -1,15 +1,15 @@
 package main.java.Game;
 
-import main.java.Gui.MainMenuPage; // Make sure to import MainMenuPage
+import main.java.Gui.MainMenuPage;
 import main.java.Gui.ProfilePage;
 import main.java.Player.Player;
 import main.java.Object.Card;
 import main.java.Object.Deck;
 import main.java.User.UserData;
+import main.java.Utils.CardImageLoader;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,6 +30,7 @@ public class Session extends JFrame {
     private JPanel playerPanel;
     private JPanel drawPilePanel;
     private JPanel discardPilePanel;
+    private JPanel userDeckPanel;
     private JButton unoButton;
     private JButton callOutButton;
     private JButton drawCardButton;
@@ -47,6 +48,7 @@ public class Session extends JFrame {
     private static final String LOG_FILE_PATH = "game_logs.txt";
     private String currentColor;
     private boolean gameOver = false;
+    private CardImageLoader cardImageLoader;
 
     public Session(String sessionName, int playerCount, String humanPlayerEmail) {
         this.sessionName = sessionName;
@@ -56,6 +58,7 @@ public class Session extends JFrame {
         this.drawPile = new Deck(); // Initialize the deck
         this.discardPile = new ArrayList<>(); // Initialize the discard pile
         this.currentColor = null;
+        cardImageLoader = new CardImageLoader();
 
         setupLogger();
         setupMenu();
@@ -72,7 +75,8 @@ public class Session extends JFrame {
         // Initialize all UI components here
         drawPilePanel = new JPanel(new BorderLayout());
         discardPilePanel = new JPanel(new BorderLayout());
-        playerPanel = new JPanel(new GridLayout(playerCount + 1, 1)); // +1 for the main player
+        userDeckPanel = new JPanel(new FlowLayout());
+        playerPanel = new JPanel(new GridLayout(playerCount, 1)); // Adjusted grid layout
 
         // Setting up the main panel and other UI elements
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -82,10 +86,14 @@ public class Session extends JFrame {
         topPanel.add(sessionNameLabel);
         topPanel.add(directionLabel);
 
-        JPanel centerPanel = new JPanel(new GridLayout(1, 3));
-        centerPanel.add(drawPilePanel);
-        centerPanel.add(discardPilePanel);
-        centerPanel.add(playerPanel);
+        JPanel centerPanel = new JPanel(new GridLayout(2, 1));
+        JPanel topCenterPanel = new JPanel(new GridLayout(1, 3));
+        topCenterPanel.add(drawPilePanel);
+        topCenterPanel.add(discardPilePanel);
+        topCenterPanel.add(playerPanel);
+
+        centerPanel.add(topCenterPanel);
+        centerPanel.add(userDeckPanel);
 
         JPanel bottomPanel = new JPanel(new FlowLayout());
         unoButton = new JButton("UNO");
@@ -313,55 +321,68 @@ public class Session extends JFrame {
     }
 
     private void updateGameUI() {
-        // Update the game UI to reflect the current game state
         SwingUtilities.invokeLater(() -> {
             System.out.println("Updating Game UI");
 
-            // Debugging: Print the number of cards in the draw pile and discard pile
-            System.out.println("Draw Pile Size: " + drawPile.size());
-            System.out.println("Discard Pile Size: " + discardPile.size());
-
-            // Clear and repopulate the draw pile UI
+            // Update draw pile UI
             drawPilePanel.removeAll();
             drawPilePanel.add(new JLabel("Cards: " + drawPile.size()), BorderLayout.CENTER);
 
-            // Clear and repopulate the discard pile UI
+            // Update discard pile UI
             discardPilePanel.removeAll();
             if (discardPile.isEmpty()) {
-                System.out.println("Discard Pile is empty");
                 discardPilePanel.add(new JLabel("Discard Pile is empty"), BorderLayout.CENTER);
             } else {
                 Card topCard = discardPile.get(discardPile.size() - 1);
-                System.out.println("Top Discard Card: " + topCard.toString());
-                discardPilePanel.add(new JLabel("Top Discard: " + topCard.toString()), BorderLayout.CENTER);
+                ImageIcon topCardImage = CardImageLoader.getCardImage(topCard.toString());
+                if (topCardImage != null) {
+                    discardPilePanel.add(new JLabel(topCardImage), BorderLayout.CENTER);
+                } else {
+                    discardPilePanel.add(new JLabel("Top Discard: " + topCard.toString()), BorderLayout.CENTER);
+                }
             }
 
-            // Update players' hands
+            // Update user's hand under the discard pile
+            userDeckPanel.removeAll();
+            Player userPlayer = players.get(0); // Assuming the first player is the user
+            for (Card card : userPlayer.getHand()) {
+                ImageIcon cardImage = CardImageLoader.getCardImage(card.toString());
+                if (cardImage != null) {
+                    userDeckPanel.add(new JLabel(cardImage));
+                } else {
+                    userDeckPanel.add(new JLabel(card.toString()));
+                }
+            }
+
+            // Update other players' hands
             playerPanel.removeAll();
-            for (Player player : players) {
-                System.out.println(player.getName() + " has " + player.getCardCount() + " cards");
-                playerPanel.add(new JLabel(player.getName() + ": " + player.getCardCount() + " cards"));
+            for (int i = 1; i < players.size(); i++) {
+                Player player = players.get(i);
+                JPanel playerHandPanel = new JPanel();
+                for (Card card : player.getHand()) {
+                    ImageIcon cardImage = CardImageLoader.getCardImage(card.toString());
+                    if (cardImage != null) {
+                        playerHandPanel.add(new JLabel(cardImage));
+                    } else {
+                        playerHandPanel.add(new JLabel(card.toString()));
+                    }
+                }
+                playerPanel.add(new JLabel(player.getName() + ": " + player.getCardCount() + " cards"), BorderLayout.WEST);
+                playerPanel.add(playerHandPanel, BorderLayout.CENTER);
             }
 
-            // Repopulate card selection combo box
+            // Update combo box for the current player's playable cards
             playCardComboBox.removeAllItems();
             Player currentPlayer = players.get(currentPlayerIndex);
             if (!currentPlayer.isBot()) {
-                System.out.println("Current player's turn: " + currentPlayer.getName() + ", loading cards:");
                 for (Card card : currentPlayer.getHand()) {
                     playCardComboBox.addItem(card);
-                    System.out.println("Adding card: " + card);
                 }
-            } else {
-                System.out.println("Bot's turn. No cards loaded in dropdown.");
             }
 
-            // Set game direction
             directionLabel.setText("Direction: " + (isClockwise ? "Clockwise" : "Counter-Clockwise"));
-            System.out.println("Game direction: " + (isClockwise ? "Clockwise" : "Counter-Clockwise"));
             unoButton.setEnabled(players.get(currentPlayerIndex).getCardCount() == 1);
 
-            // Ensure UI components are refreshed
             revalidate();
             repaint();
         });
@@ -387,8 +408,8 @@ public class Session extends JFrame {
         }
     }
 
+ // Method to play a card
     private void playCard(Card card) {
-        // Play the specified card
         Player currentPlayer = players.get(currentPlayerIndex);
         Card topCard = discardPile.get(discardPile.size() - 1);
         LOGGER.info("Attempting to play card: " + card + ". Current card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
@@ -398,7 +419,7 @@ public class Session extends JFrame {
             if (wasRemoved) {
                 discardPile.add(card);
 
-                // Handle wild cards and prompt for color selection
+                // Handling wild cards and prompt for color selection
                 if (card.getValue().startsWith("Wild")) {
                     if (!currentPlayer.isBot()) {
                         currentColor = getUserSelectedColor(); // Prompt user to select color
@@ -409,13 +430,14 @@ public class Session extends JFrame {
                     }
                 }
 
-                // Handle Reverse and Skip actions
+                // Handling Reverse and Skip actions
                 if (card.getValue().equals("Reverse")) {
-                    isClockwise = !isClockwise; // Toggle game direction
+                    isClockwise = !isClockwise; // swap game direction
                     JOptionPane.showMessageDialog(this, "Game direction reversed!", "Reverse Card", JOptionPane.INFORMATION_MESSAGE);
                 } else if (card.getValue().equals("Skip")) {
                     JOptionPane.showMessageDialog(this, currentPlayer.getName() + " plays Skip! Next player loses turn.", "Skip Card", JOptionPane.INFORMATION_MESSAGE);
                     skipNextPlayer(); // Advances to the next player, skipping one
+                    updateGameUI(); // Ensure the UI is updated after skipping
                     return; // Return early to prevent further action
                 }
 
@@ -426,6 +448,7 @@ public class Session extends JFrame {
                     applyDraw(nextPlayerIndex(), 2); // Apply two cards to the next player
                 }
 
+                // Update the game UI to reflect the changes
                 updateGameUI();
                 LOGGER.info("Card played. New card count: " + currentPlayer.getCardCount() + ", Uno called: " + currentPlayer.hasCalledUno());
 
@@ -438,7 +461,7 @@ public class Session extends JFrame {
                         endGame();
                     }
                 } else {
-                    nextPlayer();
+                    nextPlayer(); // Move to the next player
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Failed to remove card!", "Error", JOptionPane.ERROR_MESSAGE);
