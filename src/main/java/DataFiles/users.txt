@@ -1,1 +1,3 @@
-caqviwhbed@gmail.com,Mimahs2003#,Male,21,160,3,2,5
+fi@gmail.com,Mimahs2003#,Male,20,161,2,0,2,C:\Users\Effendi Jabid Kamal\eclipse-workspace\UnoCardGameSimulationDesignAndDevelopment\src\main\java\DataFiles\Pfps\a_Roster_Pose_MonsterHunterM.png
+fic@gmail.com,Mimahs2003%,Male,22,0,0,2,2,C:\Users\Effendi Jabid Kamal\eclipse-workspace\UnoCardGameSimulationDesignAndDevelopment\src\main\java\DataFiles\Pfps\a_Roster_Pose_BountyHunterM.png
+fik@gmail.com,Mimahs2003$,Male,21,0,5,2,2,C:\Users\Effendi Jabid Kamal\eclipse-workspace\UnoCardGameSimulationDesignAndDevelopment\src\main\java\DataFiles\Pfps\cassidy.png

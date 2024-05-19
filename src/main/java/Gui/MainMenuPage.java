@@ -1,12 +1,18 @@
+/************** Pledge of Honor ******************************************
+I hereby certify that I have completed this programming project on my own
+without any help from anyone else. The effort in the project thus belongs
+completely to me. I did not search for a solution, or I did not consult any
+program written by others or did not copy any program from other sources. I
+read and followed the guidelines provided in the project description.
+READ AND SIGN BY WRITING YOUR NAME SURNAME AND STUDENT ID
+SIGNATURE: <Effendi Jabid Kamal, 0082496>
+*************************************************************************/
 package main.java.Gui;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import main.java.Game.Session;
-import main.java.Object.Card;
-import main.java.Object.Deck;
-import main.java.Player.Player;
 import main.java.User.UserData;
 import main.java.Utils.NonEditableTableModel;
 import java.awt.*;
@@ -53,7 +59,7 @@ public class MainMenuPage extends JFrame {
         gameOptionsPanel.add(continueGameButton);
         gameOptionsPanel.add(logOutButton);
         savedSessions = new ArrayList<>();
-        
+
         // Adding components to the frame
         add(leaderboardScrollPane, BorderLayout.WEST);
         add(userStatsScrollPane, BorderLayout.CENTER);
@@ -64,8 +70,8 @@ public class MainMenuPage extends JFrame {
         setVisible(true);
     }
 
-    // Load leaderboard data from a file
     private void loadLeaderboardData() {
+        // Load leaderboard data from the user data file
         File file = new File("C:\\Users\\Effendi Jabid Kamal\\eclipse-workspace\\UnoCardGameSimulationDesignAndDevelopment\\src\\main\\java\\DataFiles\\users.txt");
         usersData = new ArrayList<>();
 
@@ -73,13 +79,12 @@ public class MainMenuPage extends JFrame {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] details = line.split(",");
-                
-                // Check if the line has exactly 8 elements
-                if (details.length != 8) {
+                // Check if the line has exactly 8 or 9 elements
+                if (details.length != 8 && details.length != 9) {
                     System.err.println("Skipping malformed line (wrong number of elements): " + line);
                     continue;
                 }
-                
+
                 String email = details[0];
                 String password = details[1];
                 String sex = details[2];
@@ -117,7 +122,8 @@ public class MainMenuPage extends JFrame {
                     continue;
                 }
 
-                UserData user = new UserData(email, password, sex, age, totalScore, wins, losses, gamesPlayed);
+                String profilePicturePath = details.length == 9 ? details[8] : "";
+                UserData user = new UserData(email, password, sex, age, totalScore, wins, losses, gamesPlayed, profilePicturePath);
                 usersData.add(user);
                 leaderboardModel.addRow(new Object[]{email, totalScore});
             }
@@ -126,27 +132,27 @@ public class MainMenuPage extends JFrame {
         }
     }
 
-    // Display the user statistics when a user is selected from the leaderboard
     private void showUserStats() {
+        // Show the statistics of the selected user
         int selectedRow = leaderboardTable.getSelectedRow();
         if (selectedRow != -1) {
             String username = leaderboardModel.getValueAt(selectedRow, 0).toString();
             UserData user = findUserByUsername(username);
             if (user != null) {
                 userStatsTextArea.setText("Statistics for " + username + "\n\n"
-                    + "Total Score: " + user.getTotalScore() + "\n"
-                    + "Wins: " + user.getWins() + "\n"
-                    + "Losses: " + user.getLosses() + "\n"
-                    + "Games Played: " + user.getGamesPlayed() + "\n"
-                    + "Average Score per Game: " + user.getAverageScore() + "\n"
-                    + "Win/Loss Ratio: " + user.getWinLossRatio() + "\n"
+                        + "Total Score: " + user.getTotalScore() + "\n"
+                        + "Wins: " + user.getWins() + "\n"
+                        + "Losses: " + user.getLosses() + "\n"
+                        + "Games Played: " + user.getGamesPlayed() + "\n"
+                        + "Average Score per Game: " + user.getAverageScore() + "\n"
+                        + "Win/Loss Ratio: " + user.getWinLossRatio() + "\n"
                 );
             }
         }
     }
 
-    // Find a user by their username (email) from the list of user data
     private UserData findUserByUsername(String username) {
+        // Find a user by their username
         for (UserData user : usersData) {
             if (user.getUsername().equals(username)) {
                 return user;
@@ -155,8 +161,13 @@ public class MainMenuPage extends JFrame {
         return null;
     }
 
-    // Start a new game session
     private void startNewGame() {
+        // Start a new game session
+        if (usersData.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No users loaded. Cannot start a new game.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         String sessionName = JOptionPane.showInputDialog(this, "Enter Session Name:", "New Game", JOptionPane.QUESTION_MESSAGE);
         if (sessionName != null && !sessionName.trim().isEmpty()) {
             String playerCountStr = JOptionPane.showInputDialog(this, "Enter Number of Players (2-10):", "New Game", JOptionPane.QUESTION_MESSAGE);
@@ -175,8 +186,8 @@ public class MainMenuPage extends JFrame {
         }
     }
 
-    // Continue an existing game session
     private void continueExistingGame() {
+        // Continue a previously saved game session
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File("."));
         fileChooser.setDialogTitle("Select Saved Game File");
@@ -196,14 +207,14 @@ public class MainMenuPage extends JFrame {
         }
     }
 
-    // Log out and return to the login page
     private void logOut() {
+        // Log out and return to the login page
         new LoginPage();
         dispose();
     }
 
-    // Main method to start the MainMenuPage
     public static void main(String[] args) {
+        // Launch the main menu page
         new MainMenuPage();
     }
 }

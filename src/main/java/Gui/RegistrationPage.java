@@ -5,12 +5,16 @@ import main.java.Utils.RegistrationHandler;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 public class RegistrationPage extends JFrame {
     private JTextField emailField;
     private JPasswordField passwordField;
     private JComboBox<String> sexComboBox;
     private JTextField ageField;
+    private JTextField profilePictureField;
+    private JButton browseButton;
+    private File profilePictureFile;
 
     public RegistrationPage() {
         setTitle("Registration Page");
@@ -54,12 +58,34 @@ public class RegistrationPage extends JFrame {
         gbc.gridx = 1;
         add(ageField, gbc);
 
+        JLabel profilePictureLabel = new JLabel("Profile Picture:");
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        add(profilePictureLabel, gbc);
+        profilePictureField = new JTextField(15);
+        profilePictureField.setEditable(false);
+        gbc.gridx = 1;
+        add(profilePictureField, gbc);
+
+        browseButton = new JButton("Browse");
+        browseButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            int result = fileChooser.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                profilePictureFile = fileChooser.getSelectedFile();
+                profilePictureField.setText(profilePictureFile.getAbsolutePath());
+            }
+        });
+        gbc.gridx = 2;
+        add(browseButton, gbc);
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton registerButton = new JButton("Register");
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                RegistrationHandler.handleRegistration(emailField.getText(), new String(passwordField.getPassword()), (String) sexComboBox.getSelectedItem(), ageField.getText());
+                RegistrationHandler.handleRegistration(emailField.getText(), new String(passwordField.getPassword()), (String) sexComboBox.getSelectedItem(), ageField.getText(), profilePictureField.getText());
             }
         });
         buttonPanel.add(registerButton);
@@ -76,11 +102,11 @@ public class RegistrationPage extends JFrame {
         buttonPanel.add(cancelButton);
 
         gbc.gridx = 0;
-        gbc.gridy = 4;
-        gbc.gridwidth = 2;
+        gbc.gridy = 5;
+        gbc.gridwidth = 3;
         add(buttonPanel, gbc);
 
-        setSize(400, 250);
+        setSize(600, 300);
         setVisible(true);
         setLocationRelativeTo(null);
     }

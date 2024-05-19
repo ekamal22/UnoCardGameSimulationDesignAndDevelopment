@@ -6,7 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class RegistrationHandler {
-    public static void handleRegistration(String email, String password, String sex, String age) {
+    public static void handleRegistration(String email, String password, String sex, String age, String profilePicturePath) {
         // Validate email
         if (!email.contains("@") || !email.contains(".")) {
             JOptionPane.showMessageDialog(null, "Invalid email format", "Error", JOptionPane.ERROR_MESSAGE);
@@ -31,6 +31,12 @@ public class RegistrationHandler {
             return;
         }
 
+        // Validate profile picture
+        if (profilePicturePath == null || profilePicturePath.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Profile picture is required", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         // Initialize user statistics
         int totalScore = 0;
         int wins = 0;
@@ -38,7 +44,7 @@ public class RegistrationHandler {
         int gamesPlayed = 0;
 
         // Save user details
-        String userDetails = email + "," + password + "," + sex + "," + age + "," + totalScore + "," + wins + "," + losses + "," + gamesPlayed + "\n";
+        String userDetails = email + "," + password + "," + sex + "," + age + "," + totalScore + "," + wins + "," + losses + "," + gamesPlayed + "," + profilePicturePath + "\n";
         try {
             File file = new File("C:\\Users\\Effendi Jabid Kamal\\eclipse-workspace\\UnoCardGameSimulationDesignAndDevelopment\\src\\main\\java\\DataFiles\\users.txt");
             FileWriter writer = new FileWriter(file, true);
