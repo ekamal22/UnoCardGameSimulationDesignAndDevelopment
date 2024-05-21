@@ -76,7 +76,7 @@ public class Session extends JFrame {
         drawPilePanel = new JPanel(new BorderLayout());
         discardPilePanel = new JPanel(new BorderLayout());
         userDeckPanel = new JPanel(new FlowLayout());
-        playerPanel = new JPanel(new GridLayout(playerCount, 1)); // Adjusted grid layout
+        playerPanel = new JPanel(new GridLayout(playerCount - 1, 1)); // Adjusted grid layout
 
         // Setting up the main panel and other UI elements
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -354,30 +354,19 @@ public class Session extends JFrame {
                 }
             }
 
-            // Update other players' hands
-            playerPanel.removeAll();
-            for (int i = 1; i < players.size(); i++) {
-                Player player = players.get(i);
-                JPanel playerHandPanel = new JPanel();
-                for (Card card : player.getHand()) {
-                    ImageIcon cardImage = CardImageLoader.getCardImage(card.toString());
-                    if (cardImage != null) {
-                        playerHandPanel.add(new JLabel(cardImage));
-                    } else {
-                        playerHandPanel.add(new JLabel(card.toString()));
-                    }
-                }
-                playerPanel.add(new JLabel(player.getName() + ": " + player.getCardCount() + " cards"), BorderLayout.WEST);
-                playerPanel.add(playerHandPanel, BorderLayout.CENTER);
-            }
-
             // Update combo box for the current player's playable cards
             playCardComboBox.removeAllItems();
-            Player currentPlayer = players.get(currentPlayerIndex);
-            if (!currentPlayer.isBot()) {
-                for (Card card : currentPlayer.getHand()) {
+            if (!userPlayer.isBot()) {
+                for (Card card : userPlayer.getHand()) {
                     playCardComboBox.addItem(card);
                 }
+            }
+
+            // Update other players' hands
+            playerPanel.removeAll();
+            for (int i = 1; i < players.size(); i++) { // Skipping the first player
+                Player player = players.get(i);
+                playerPanel.add(new JLabel(player.getName() + ": " + player.getCardCount() + " cards"));
             }
 
             directionLabel.setText("Direction: " + (isClockwise ? "Clockwise" : "Counter-Clockwise"));
@@ -408,7 +397,6 @@ public class Session extends JFrame {
         }
     }
 
- // Method to play a card
     private void playCard(Card card) {
         Player currentPlayer = players.get(currentPlayerIndex);
         Card topCard = discardPile.get(discardPile.size() - 1);
@@ -707,7 +695,7 @@ public class Session extends JFrame {
 
     private void nextPlayer() {
         // Move to the next player
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        currentPlayerIndex = nextPlayerIndex();
         Player currentPlayer = players.get(currentPlayerIndex);
 
         if (!currentPlayer.isBot()) {

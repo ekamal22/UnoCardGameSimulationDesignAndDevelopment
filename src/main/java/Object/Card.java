@@ -32,6 +32,9 @@ public class Card{
 
     @Override
     public String toString() {
+        if (value.equals("Wild") || value.equals("Wild Draw Four")) {
+            return value;
+        }
         return color + " " + value;
     }
 }
