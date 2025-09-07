@@ -9,20 +9,24 @@ SIGNATURE: <Effendi Jabid Kamal, 0082496>
 *************************************************************************/
 package main.java.Gui;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.DefaultTableModel;
 import main.java.Game.Session;
 import main.java.User.UserData;
+import main.java.Utils.AppFiles;
 import main.java.Utils.NonEditableTableModel;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainMenuPage extends JFrame {
     private JTable leaderboardTable;
-    private NonEditableTableModel leaderboardModel; // Use the custom table model
+    private NonEditableTableModel leaderboardModel;
     private JTextArea userStatsTextArea;
     private List<UserData> usersData;
     private List<String> savedSessions;
@@ -36,13 +40,19 @@ public class MainMenuPage extends JFrame {
         String[] columnNames = {"Username", "Total Score"};
         leaderboardModel = new NonEditableTableModel(columnNames, 0);
         leaderboardTable = new JTable(leaderboardModel);
+        leaderboardTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JTableHeader header = leaderboardTable.getTableHeader();
+        header.setReorderingAllowed(false);
         loadLeaderboardData();
-        leaderboardTable.getSelectionModel().addListSelectionListener(e -> showUserStats());
+        leaderboardTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) showUserStats();
+        });
         JScrollPane leaderboardScrollPane = new JScrollPane(leaderboardTable);
 
         // User Statistics Section
-        userStatsTextArea = new JTextArea(8, 30);
+        userStatsTextArea = new JTextArea(10, 30);
         userStatsTextArea.setEditable(false);
+        userStatsTextArea.setMargin(new Insets(8, 8, 8, 8));
         JScrollPane userStatsScrollPane = new JScrollPane(userStatsTextArea);
 
         // Game Options Section
@@ -51,7 +61,6 @@ public class MainMenuPage extends JFrame {
         newGameButton.addActionListener(e -> startNewGame());
         JButton continueGameButton = new JButton("Continue Game");
         continueGameButton.addActionListener(e -> continueExistingGame());
-
         JButton logOutButton = new JButton("Log Out");
         logOutButton.addActionListener(e -> logOut());
 
@@ -60,72 +69,54 @@ public class MainMenuPage extends JFrame {
         gameOptionsPanel.add(logOutButton);
         savedSessions = new ArrayList<>();
 
-        // Adding components to the frame
+        // Layout
         add(leaderboardScrollPane, BorderLayout.WEST);
         add(userStatsScrollPane, BorderLayout.CENTER);
         add(gameOptionsPanel, BorderLayout.EAST);
 
-        setSize(800, 400);
+        setSize(900, 450);
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
     private void loadLeaderboardData() {
-        // Load leaderboard data from the user data file
-        File file = new File("C:\\Users\\Effendi Jabid Kamal\\eclipse-workspace\\UnoCardGameSimulationDesignAndDevelopment\\src\\main\\java\\DataFiles\\users.txt");
         usersData = new ArrayList<>();
+        leaderboardModel.setRowCount(0);
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] details = line.split(",");
-                // Check if the line has exactly 8 or 9 elements
-                if (details.length != 8 && details.length != 9) {
-                    System.err.println("Skipping malformed line (wrong number of elements): " + line);
-                    continue;
+        try {
+            Files.createDirectories(AppFiles.dataDir());
+            if (Files.notExists(AppFiles.usersFile())) {
+                // No users yet; create empty file so later writes succeed.
+                Files.writeString(AppFiles.usersFile(), "");
+            }
+
+            try (BufferedReader reader = Files.newBufferedReader(AppFiles.usersFile())) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] details = line.split(",", -1);
+                    // Expected: 8 or 9 fields (9 if profile picture path present)
+                    if (details.length < 8) continue;
+
+                    String email = details[0];
+                    String password = details.length > 1 ? details[1] : "";
+                    String sex = details.length > 2 ? details[2] : "";
+                    String age = details.length > 3 ? details[3] : "";
+
+                    int totalScore, wins, losses, gamesPlayed;
+                    try {
+                        totalScore = Integer.parseInt(details[4]);
+                        wins = Integer.parseInt(details[5]);
+                        losses = Integer.parseInt(details[6]);
+                        gamesPlayed = Integer.parseInt(details[7]);
+                    } catch (NumberFormatException nfe) {
+                        continue; // skip malformed numeric row
+                    }
+
+                    String profilePicturePath = (details.length >= 9) ? details[8] : "";
+                    UserData user = new UserData(email, password, sex, age, totalScore, wins, losses, gamesPlayed, profilePicturePath);
+                    usersData.add(user);
+                    leaderboardModel.addRow(new Object[]{email, totalScore});
                 }
-
-                String email = details[0];
-                String password = details[1];
-                String sex = details[2];
-                String age = details[3];
-                int totalScore;
-                int wins;
-                int losses;
-                int gamesPlayed;
-
-                try {
-                    totalScore = Integer.parseInt(details[4]);
-                } catch (NumberFormatException e) {
-                    System.err.println("Skipping malformed line (invalid totalScore): " + line);
-                    continue;
-                }
-
-                try {
-                    wins = Integer.parseInt(details[5]);
-                } catch (NumberFormatException e) {
-                    System.err.println("Skipping malformed line (invalid wins): " + line);
-                    continue;
-                }
-
-                try {
-                    losses = Integer.parseInt(details[6]);
-                } catch (NumberFormatException e) {
-                    System.err.println("Skipping malformed line (invalid losses): " + line);
-                    continue;
-                }
-
-                try {
-                    gamesPlayed = Integer.parseInt(details[7]);
-                } catch (NumberFormatException e) {
-                    System.err.println("Skipping malformed line (invalid gamesPlayed): " + line);
-                    continue;
-                }
-
-                String profilePicturePath = details.length == 9 ? details[8] : "";
-                UserData user = new UserData(email, password, sex, age, totalScore, wins, losses, gamesPlayed, profilePicturePath);
-                usersData.add(user);
-                leaderboardModel.addRow(new Object[]{email, totalScore});
             }
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error loading leaderboard data", "Error", JOptionPane.ERROR_MESSAGE);
@@ -133,88 +124,87 @@ public class MainMenuPage extends JFrame {
     }
 
     private void showUserStats() {
-        // Show the statistics of the selected user
         int selectedRow = leaderboardTable.getSelectedRow();
-        if (selectedRow != -1) {
-            String username = leaderboardModel.getValueAt(selectedRow, 0).toString();
-            UserData user = findUserByUsername(username);
-            if (user != null) {
-                userStatsTextArea.setText("Statistics for " + username + "\n\n"
-                        + "Total Score: " + user.getTotalScore() + "\n"
-                        + "Wins: " + user.getWins() + "\n"
-                        + "Losses: " + user.getLosses() + "\n"
-                        + "Games Played: " + user.getGamesPlayed() + "\n"
-                        + "Average Score per Game: " + user.getAverageScore() + "\n"
-                        + "Win/Loss Ratio: " + user.getWinLossRatio() + "\n"
-                );
-            }
+        if (selectedRow == -1) return;
+
+        String username = leaderboardModel.getValueAt(selectedRow, 0).toString();
+        UserData user = findUserByUsername(username);
+        if (user != null) {
+            userStatsTextArea.setText(
+                    "Statistics for " + username + "\n\n" +
+                            "Total Score: " + user.getTotalScore() + "\n" +
+                            "Wins: " + user.getWins() + "\n" +
+                            "Losses: " + user.getLosses() + "\n" +
+                            "Games Played: " + user.getGamesPlayed() + "\n" +
+                            "Average Score per Game: " + user.getAverageScore() + "\n" +
+                            "Win/Loss Ratio: " + user.getWinLossRatio() + "\n"
+            );
+        } else {
+            userStatsTextArea.setText("No stats available.");
         }
     }
 
     private UserData findUserByUsername(String username) {
-        // Find a user by their username
         for (UserData user : usersData) {
-            if (user.getUsername().equals(username)) {
-                return user;
-            }
+            if (user.getUsername().equals(username)) return user;
         }
         return null;
     }
 
     private void startNewGame() {
-        // Start a new game session
         if (usersData.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No users loaded. Cannot start a new game.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         String sessionName = JOptionPane.showInputDialog(this, "Enter Session Name:", "New Game", JOptionPane.QUESTION_MESSAGE);
-        if (sessionName != null && !sessionName.trim().isEmpty()) {
-            String playerCountStr = JOptionPane.showInputDialog(this, "Enter Number of Players (2-10):", "New Game", JOptionPane.QUESTION_MESSAGE);
-            try {
-                int playerCount = Integer.parseInt(playerCountStr);
-                if (playerCount >= 2 && playerCount <= 10) {
-                    new Session(sessionName, playerCount, usersData.get(0).getUsername()); // Pass human player's email
-                    savedSessions.add(sessionName);
-                    dispose();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Player count must be between 2 and 10", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "Invalid number entered", "Error", JOptionPane.ERROR_MESSAGE);
+        if (sessionName == null || sessionName.trim().isEmpty()) return;
+
+        String playerCountStr = JOptionPane.showInputDialog(this, "Enter Number of Players (2-10):", "New Game", JOptionPane.QUESTION_MESSAGE);
+        if (playerCountStr == null) return;
+
+        try {
+            int playerCount = Integer.parseInt(playerCountStr);
+            if (playerCount < 2 || playerCount > 10) {
+                JOptionPane.showMessageDialog(this, "Player count must be between 2 and 10", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                return;
             }
+            // Use the first loaded user as the human player email (as in your original)
+            new Session(sessionName, playerCount, usersData.get(0).getUsername());
+            savedSessions.add(sessionName);
+            dispose();
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid number entered", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void continueExistingGame() {
-        // Continue a previously saved game session
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new File("."));
+        fileChooser.setCurrentDirectory(new java.io.File("."));
         fileChooser.setDialogTitle("Select Saved Game File");
         fileChooser.setFileFilter(new FileNameExtensionFilter("UNO Save Files", "txt"));
 
         int result = fileChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
-                Session loadedGameSession = new Session("Placeholder", 0, usersData.get(0).getUsername()); // Pass human player's email
-                loadedGameSession.loadGame(reader); // Load game data using the method from Session.java
-                loadedGameSession.setVisible(true);
-                this.dispose();  // Close the MainMenuPage
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Failed to load the game: " + e.getMessage(), "Load Error", JOptionPane.ERROR_MESSAGE);
-            }
+        if (result != JFileChooser.APPROVE_OPTION) return;
+
+        java.io.File selectedFile = fileChooser.getSelectedFile();
+        try (BufferedReader reader = Files.newBufferedReader(selectedFile.toPath())) {
+            // Use the first loaded user’s email (consistent with startNewGame)
+            Session loadedGameSession = new Session("Placeholder", 0, usersData.isEmpty() ? "user@example.com" : usersData.get(0).getUsername());
+            loadedGameSession.loadGame(reader);
+            loadedGameSession.setVisible(true);
+            this.dispose();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Failed to load the game: " + e.getMessage(), "Load Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void logOut() {
-        // Log out and return to the login page
         new LoginPage();
         dispose();
     }
 
     public static void main(String[] args) {
-        // Launch the main menu page
-        new MainMenuPage();
+        SwingUtilities.invokeLater(MainMenuPage::new);
     }
 }
