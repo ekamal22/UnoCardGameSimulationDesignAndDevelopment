@@ -1,31 +1,33 @@
 package main.java.Utils;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.ImageIcon;
+import java.awt.Image;
 import java.io.File;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * CardImageLoader (scaled, cached, no-move)
  *
- * Features:
- *  - Returns reasonably-sized ImageIcons (default height: 120 px, aspect preserved).
- *  - Overload lets you request a specific height per call.
- *  - Caches scaled icons for performance.
- *  - Finds assets in this order (no config needed):
- *      1) Classpath (if someone puts them under src/main/resources)
+ * - Returns reasonably-sized ImageIcons (default height: 120 px, aspect preserved).
+ * - Overload lets you request a specific height per call.
+ * - Caches scaled icons for performance.
+ * - Finds assets in this order (no config needed):
+ *      1) Classpath (if assets live under src/main/resources)
  *      2) JVM override: -Duno.images=/absolute/path/to/DataFiles
- *      3) Auto-detect repo layouts near working dir:
+ *      3) Auto-detect near working dir:
  *         ./src/main/java/DataFiles, ./src/main/resources/DataFiles, ./DataFiles
  *         (and the same up to two parent directories)
- *  - Supports GIF/PNG/JPG and both number name styles: "Blue 5" and "Blue (5)".
+ * - Supports GIF/PNG/JPG and both number name styles: "Blue 5" and "Blue (5)".
  */
 public class CardImageLoader {
 
     // ---------- sizing ----------
-    private static volatile int DEFAULT_HEIGHT = 120; // px; change with setDefaultHeight(...)
+    private static volatile int DEFAULT_HEIGHT = 120; // px
     public static void setDefaultHeight(int heightPx) { DEFAULT_HEIGHT = Math.max(24, heightPx); }
 
     // Optional override: point to a DataFiles folder on disk (dev convenience)
@@ -104,7 +106,7 @@ public class CardImageLoader {
             return null;
         }
 
-        // Scale to target height (preserve aspect). For GIFs this keeps things simple & fast.
+        // Scale to target height (preserve aspect). Works fine for GIF/PNG/JPG.
         int ow = original.getIconWidth();
         int oh = original.getIconHeight();
         if (oh <= 0) return original;
@@ -141,7 +143,7 @@ public class CardImageLoader {
         String value = cardName.substring(sp + 1).trim();   // 0..9, Reverse, Skip, Draw Two
 
         // Numbers: try "Color N" and "Color (N)"
-        if (isDigit(value)) {
+        if (isSingleDigit(value)) {
             addAllExt(out, "/DataFiles/UNO Cards/Number/" + color + " " + value);
             addAllExt(out, "/DataFiles/UNO Cards/Number/" + color + " (" + value + ")");
             return out;
@@ -176,7 +178,7 @@ public class CardImageLoader {
         list.add(baseNoExt + ".jpg");
     }
 
-    private static boolean isDigit(String s) {
+    private static boolean isSingleDigit(String s) {
         return s.length() == 1 && Character.isDigit(s.charAt(0));
     }
 
@@ -228,7 +230,7 @@ public class CardImageLoader {
     }
 
     // Debug helper to see all tried paths for a card
-    public static java.util.List<String> debugCandidates(String cardName) {
+    public static List<String> debugCandidates(String cardName) {
         return Collections.unmodifiableList(buildCandidates(cardName));
     }
 }

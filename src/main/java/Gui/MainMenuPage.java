@@ -19,6 +19,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -180,24 +181,34 @@ public class MainMenuPage extends JFrame {
 
     private void continueExistingGame() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new java.io.File("."));
         fileChooser.setDialogTitle("Select Saved Game File");
-        fileChooser.setFileFilter(new FileNameExtensionFilter("UNO Save Files", "txt"));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("UNO Save Files (*.txt)", "txt"));
+        fileChooser.setCurrentDirectory(new File(".")); // change if you have a dedicated saves folder
 
         int result = fileChooser.showOpenDialog(this);
-        if (result != JFileChooser.APPROVE_OPTION) return;
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return; // user cancelled
+        }
 
-        java.io.File selectedFile = fileChooser.getSelectedFile();
-        try (BufferedReader reader = Files.newBufferedReader(selectedFile.toPath())) {
-            // Use the first loaded user’s email (consistent with startNewGame)
-            Session loadedGameSession = new Session("Placeholder", 0, usersData.isEmpty() ? "user@example.com" : usersData.get(0).getUsername());
-            loadedGameSession.loadGame(reader);
+        File selectedFile = fileChooser.getSelectedFile();
+        if (selectedFile == null || !selectedFile.isFile()) {
+            JOptionPane.showMessageDialog(this, "Please select a valid save file.", "Invalid Selection", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (BufferedReader reader = java.nio.file.Files.newBufferedReader(selectedFile.toPath())) {
+            // Use the "load-only" Session constructor so initializeGame() is NOT called with 0 players.
+            String humanEmail = (usersData != null && !usersData.isEmpty()) ? usersData.get(0).getUsername() : "";
+            Session loadedGameSession = new Session("Loaded Game", 0, humanEmail, /*deferInit=*/true);
+
+            loadedGameSession.loadGame(reader);   // populates state and calls updateGameUI() inside
             loadedGameSession.setVisible(true);
-            this.dispose();
+            this.dispose();                       // close the main menu
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Failed to load the game: " + e.getMessage(), "Load Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     private void logOut() {
         new LoginPage();

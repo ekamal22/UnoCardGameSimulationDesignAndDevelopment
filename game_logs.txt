@@ -668,3 +668,487 @@ May 21, 2024 3:47:09 PM main.java.Game.Session playCard
 INFO: Attempting to play card: Blue 2. Current card count: 9, Uno called: false
 May 21, 2024 3:47:09 PM main.java.Game.Session playCard
 INFO: Card played. New card count: 8, Uno called: false
+Sep 08, 2025 3:57:41 PM main.java.Game.Session log
+INFO: [TURN -> ?] Game initialized. Top discard: Red 6, currentColor=Red, players=0, direction=Clockwise
+Sep 09, 2025 1:06:06 PM main.java.Game.Session log
+INFO: [TURN -> ?] Game initialized. Top discard: Green 4, currentColor=Green, players=0, direction=Clockwise
+Sep 09, 2025 1:11:53 PM main.java.Game.Session log
+INFO: [TURN -> User] Game initialized. Top discard: Green 8, currentColor=Green, players=2, direction=Clockwise
+Sep 09, 2025 1:17:33 PM main.java.Game.Session log
+INFO: [TURN -> User] Game initialized. Top discard: Red 1, currentColor=Red, players=2, direction=Clockwise
+Sep 09, 2025 1:17:40 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Green 1 on Red 1 (currentColor=Red)
+Sep 09, 2025 1:17:40 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Green 1. Hand now: 6
+Sep 09, 2025 1:17:40 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 7 cards), direction=Clockwise
+Sep 09, 2025 1:17:41 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Green 3 on Green 1
+Sep 09, 2025 1:17:41 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Green 3. Hand now: 6
+Sep 09, 2025 1:17:41 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 6 cards), direction=Clockwise
+Sep 09, 2025 1:17:50 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Green 7 on Green 3
+Sep 09, 2025 1:17:50 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Green 7. Hand now: 5
+Sep 09, 2025 1:17:50 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 6 cards), direction=Clockwise
+Sep 09, 2025 1:17:51 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Green Reverse on Green 7
+Sep 09, 2025 1:17:51 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Green Reverse. Hand now: 5
+Sep 09, 2025 1:17:51 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Direction reversed. Now Counter-Clockwise
+Sep 09, 2025 1:17:53 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 5 cards), direction=Counter-Clockwise
+Sep 09, 2025 1:17:59 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Green Reverse on Green Reverse
+Sep 09, 2025 1:17:59 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Green Reverse. Hand now: 4
+Sep 09, 2025 1:17:59 PM main.java.Game.Session log
+INFO: [TURN -> User] Direction reversed. Now Clockwise
+Sep 09, 2025 1:18:01 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 5 cards), direction=Clockwise
+Sep 09, 2025 1:18:01 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Wild Draw Four on Green Reverse
+Sep 09, 2025 1:18:01 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Wild Draw Four. Hand now: 4
+Sep 09, 2025 1:18:01 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 (bot) chose color: Green
+Sep 09, 2025 1:18:03 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Wild Draw Four. User draws 4.
+Sep 09, 2025 1:18:03 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] User draws 4 card(s) (requested 4). Hand: 8
+Sep 09, 2025 1:18:04 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 8 cards), direction=Clockwise, currentColor=Green
+Sep 09, 2025 1:18:22 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Yellow Skip on Blue Skip (currentColor=Blue)
+Sep 09, 2025 1:18:22 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Yellow Skip. Hand now: 9
+Sep 09, 2025 1:18:22 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Skip. User is skipped.
+Sep 09, 2025 1:18:23 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Skip applied: User loses their turn. It's now Bot 1's turn.
+Sep 09, 2025 1:18:23 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 6 cards), direction=Clockwise
+Sep 09, 2025 2:33:09 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Yellow Skip on Blue Skip (currentColor=Blue)
+Sep 09, 2025 2:33:09 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Yellow Skip. Hand now: 9
+Sep 09, 2025 2:33:09 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Skip. User is skipped.
+Sep 09, 2025 2:33:19 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Skip applied: User loses their turn. It's now Bot 1's turn.
+Sep 09, 2025 2:33:19 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 6 cards), direction=Clockwise
+Sep 09, 2025 2:34:25 PM main.java.Game.Session log
+INFO: [TURN -> User] User draws Yellow 6. Hand now: 7
+Sep 09, 2025 2:34:25 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 9 cards), direction=Clockwise
+Sep 09, 2025 2:34:26 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Yellow 7 on Yellow Skip
+Sep 09, 2025 2:34:26 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Yellow 7. Hand now: 8
+Sep 09, 2025 2:34:26 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 7 cards), direction=Clockwise
+Sep 09, 2025 2:34:31 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Yellow 6 on Yellow 7
+Sep 09, 2025 2:34:31 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Yellow 6. Hand now: 6
+Sep 09, 2025 2:34:31 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 8 cards), direction=Clockwise
+Sep 09, 2025 2:34:32 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Yellow Draw Two on Yellow 6
+Sep 09, 2025 2:34:32 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Yellow Draw Two. Hand now: 7
+Sep 09, 2025 2:34:32 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Draw Two. User draws 2.
+Sep 09, 2025 2:34:32 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] User draws 2 card(s) (requested 2). Hand: 8
+Sep 09, 2025 2:34:42 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 8 cards), direction=Clockwise
+Sep 09, 2025 2:34:57 PM main.java.Game.Session log
+INFO: [TURN -> User] User draws Green 9. Hand now: 9
+Sep 09, 2025 2:34:57 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 7 cards), direction=Clockwise
+Sep 09, 2025 2:34:58 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Yellow 4 on Yellow Draw Two
+Sep 09, 2025 2:34:58 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Yellow 4. Hand now: 10
+Sep 09, 2025 2:34:58 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 9 cards), direction=Clockwise
+Sep 09, 2025 2:35:03 PM main.java.Game.Session log
+INFO: [TURN -> User] User draws Yellow 6. Hand now: 10
+Sep 09, 2025 2:35:03 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 10 cards), direction=Clockwise
+Sep 09, 2025 2:35:04 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Yellow 1 on Yellow 4
+Sep 09, 2025 2:35:04 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Yellow 1. Hand now: 10
+Sep 09, 2025 2:35:04 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 10 cards), direction=Clockwise
+Sep 09, 2025 2:35:09 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Yellow 6 on Yellow 1
+Sep 09, 2025 2:35:09 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Yellow 6. Hand now: 9
+Sep 09, 2025 2:35:09 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 10 cards), direction=Clockwise
+Sep 09, 2025 2:35:10 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Green 6 on Yellow 6
+Sep 09, 2025 2:35:10 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Green 6. Hand now: 9
+Sep 09, 2025 2:35:10 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 9 cards), direction=Clockwise
+Sep 09, 2025 2:35:21 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Green 7 on Green 6
+Sep 09, 2025 2:35:21 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Green 7. Hand now: 8
+Sep 09, 2025 2:35:21 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 9 cards), direction=Clockwise
+Sep 09, 2025 2:35:22 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Green 3 on Green 7
+Sep 09, 2025 2:35:22 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Green 3. Hand now: 8
+Sep 09, 2025 2:35:22 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 8 cards), direction=Clockwise
+Sep 09, 2025 2:35:28 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Green 5 on Green 3
+Sep 09, 2025 2:35:28 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Green 5. Hand now: 7
+Sep 09, 2025 2:35:28 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 8 cards), direction=Clockwise
+Sep 09, 2025 2:35:29 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Green 8 on Green 5
+Sep 09, 2025 2:35:29 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Green 8. Hand now: 7
+Sep 09, 2025 2:35:29 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 7 cards), direction=Clockwise
+Sep 09, 2025 2:35:32 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Green 9 on Green 8
+Sep 09, 2025 2:35:32 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Green 9. Hand now: 6
+Sep 09, 2025 2:35:32 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 7 cards), direction=Clockwise
+Sep 09, 2025 2:35:33 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Green 7 on Green 9
+Sep 09, 2025 2:35:33 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Green 7. Hand now: 6
+Sep 09, 2025 2:35:33 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 6 cards), direction=Clockwise
+Sep 09, 2025 2:35:39 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Blue 7 on Green 7
+Sep 09, 2025 2:35:39 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Blue 7. Hand now: 5
+Sep 09, 2025 2:35:39 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 6 cards), direction=Clockwise
+Sep 09, 2025 2:35:39 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Blue Skip on Blue 7
+Sep 09, 2025 2:35:39 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Blue Skip. Hand now: 5
+Sep 09, 2025 2:35:39 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Skip. User is skipped.
+Sep 09, 2025 2:35:41 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Skip applied: User loses their turn. It's now Bot 1's turn.
+Sep 09, 2025 2:35:41 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 5 cards), direction=Clockwise
+Sep 09, 2025 2:35:44 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Blue 6 on Blue Skip
+Sep 09, 2025 2:35:44 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Blue 6. Hand now: 4
+Sep 09, 2025 2:35:44 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 5 cards), direction=Clockwise
+Sep 09, 2025 2:35:45 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Blue 3 on Blue 6
+Sep 09, 2025 2:35:45 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Blue 3. Hand now: 4
+Sep 09, 2025 2:35:45 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 4 cards), direction=Clockwise
+Sep 09, 2025 2:35:45 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Blue 9 on Blue 3
+Sep 09, 2025 2:35:45 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Blue 9. Hand now: 3
+Sep 09, 2025 2:35:45 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 4 cards), direction=Clockwise
+Sep 09, 2025 2:35:46 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Red 9 on Blue 9
+Sep 09, 2025 2:35:46 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Red 9. Hand now: 3
+Sep 09, 2025 2:35:46 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 3 cards), direction=Clockwise
+Sep 09, 2025 2:35:50 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Red 7 on Red 9
+Sep 09, 2025 2:35:50 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Red 7. Hand now: 2
+Sep 09, 2025 2:35:50 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 3 cards), direction=Clockwise
+Sep 09, 2025 2:35:51 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Red 1 on Red 7
+Sep 09, 2025 2:35:51 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Red 1. Hand now: 2
+Sep 09, 2025 2:35:51 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 2 cards), direction=Clockwise
+Sep 09, 2025 2:35:53 PM main.java.Game.Session log
+INFO: [TURN -> User] User draws Yellow 7. Hand now: 3
+Sep 09, 2025 2:35:53 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 2 cards), direction=Clockwise
+Sep 09, 2025 2:35:54 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Red 3 on Red 1
+Sep 09, 2025 2:35:54 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Red 3. Hand now: 5
+Sep 09, 2025 2:35:54 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 3 cards), direction=Clockwise
+Sep 09, 2025 2:35:56 PM main.java.Game.Session log
+INFO: [TURN -> User] User draws Blue 1. Hand now: 4
+Sep 09, 2025 2:35:56 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 5 cards), direction=Clockwise
+Sep 09, 2025 2:35:56 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Green 3 on Red 3
+Sep 09, 2025 2:35:56 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Green 3. Hand now: 4
+Sep 09, 2025 2:35:56 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 4 cards), direction=Clockwise
+Sep 09, 2025 2:35:58 PM main.java.Game.Session log
+INFO: [TURN -> User] User draws Wild. Hand now: 5
+Sep 09, 2025 2:35:58 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 4 cards), direction=Clockwise
+Sep 09, 2025 2:35:59 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Green 8 on Green 3
+Sep 09, 2025 2:35:59 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Green 8. Hand now: 3
+Sep 09, 2025 2:35:59 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 5 cards), direction=Clockwise
+Sep 09, 2025 2:36:02 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Wild on Green 8
+Sep 09, 2025 2:36:02 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Wild. Hand now: 4
+Sep 09, 2025 2:36:04 PM main.java.Game.Session log
+INFO: [TURN -> User] User chose color: Blue
+Sep 09, 2025 2:36:04 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 3 cards), direction=Clockwise, currentColor=Blue
+Sep 09, 2025 2:36:04 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Wild Draw Four on Wild (currentColor=Blue)
+Sep 09, 2025 2:36:04 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Wild Draw Four. Hand now: 6
+Sep 09, 2025 2:36:04 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 (bot) chose color: Blue
+Sep 09, 2025 2:36:06 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Wild Draw Four. User draws 4.
+Sep 09, 2025 2:36:06 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] User draws 4 card(s) (requested 4). Hand: 8
+Sep 09, 2025 2:36:07 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 8 cards), direction=Clockwise, currentColor=Blue
+Sep 09, 2025 2:36:12 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Blue 2 on Wild Draw Four (currentColor=Blue)
+Sep 09, 2025 2:36:12 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Blue 2. Hand now: 7
+Sep 09, 2025 2:36:12 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 6 cards), direction=Clockwise
+Sep 09, 2025 2:36:12 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Blue Reverse on Blue 2
+Sep 09, 2025 2:36:12 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Blue Reverse. Hand now: 5
+Sep 09, 2025 2:36:12 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Direction reversed. Now Counter-Clockwise
+Sep 09, 2025 2:36:14 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 7 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:16 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Blue 8 on Blue Reverse
+Sep 09, 2025 2:36:16 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Blue 8. Hand now: 6
+Sep 09, 2025 2:36:16 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 5 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:17 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Blue 8 on Blue 8
+Sep 09, 2025 2:36:17 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Blue 8. Hand now: 4
+Sep 09, 2025 2:36:17 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 6 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:21 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Blue 1 on Blue 8
+Sep 09, 2025 2:36:21 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Blue 1. Hand now: 5
+Sep 09, 2025 2:36:21 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 4 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:22 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Blue 9 on Blue 1
+Sep 09, 2025 2:36:22 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Blue 9. Hand now: 4
+Sep 09, 2025 2:36:22 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 5 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:26 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Blue 2 on Blue 9
+Sep 09, 2025 2:36:26 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Blue 2. Hand now: 4
+Sep 09, 2025 2:36:26 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 4 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:27 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Red 2 on Blue 2
+Sep 09, 2025 2:36:27 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Red 2. Hand now: 7
+Sep 09, 2025 2:36:27 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 4 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:29 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Red 5 on Red 2
+Sep 09, 2025 2:36:29 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Red 5. Hand now: 3
+Sep 09, 2025 2:36:29 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 7 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:30 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Red Skip on Red 5
+Sep 09, 2025 2:36:30 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Red Skip. Hand now: 6
+Sep 09, 2025 2:36:30 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Skip. User is skipped.
+Sep 09, 2025 2:36:31 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Skip applied: User loses their turn. It's now Bot 1's turn.
+Sep 09, 2025 2:36:31 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 3 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:33 PM main.java.Game.Session log
+INFO: [TURN -> User] User draws Red 5. Hand now: 4
+Sep 09, 2025 2:36:33 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 6 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:34 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Yellow Skip on Red Skip
+Sep 09, 2025 2:36:34 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Yellow Skip. Hand now: 5
+Sep 09, 2025 2:36:34 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Skip. User is skipped.
+Sep 09, 2025 2:36:35 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Skip applied: User loses their turn. It's now Bot 1's turn.
+Sep 09, 2025 2:36:35 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 4 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:37 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Yellow 7 on Yellow Skip
+Sep 09, 2025 2:36:37 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Yellow 7. Hand now: 3
+Sep 09, 2025 2:36:37 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 5 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:38 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Yellow 9 on Yellow 7
+Sep 09, 2025 2:36:38 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Yellow 9. Hand now: 4
+Sep 09, 2025 2:36:38 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 3 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:42 PM main.java.Game.Session log
+INFO: [TURN -> User] User draws Red 6. Hand now: 4
+Sep 09, 2025 2:36:42 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 4 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:42 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Red 9 on Yellow 9
+Sep 09, 2025 2:36:42 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Red 9. Hand now: 3
+Sep 09, 2025 2:36:42 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 4 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:45 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Red 5 on Red 9
+Sep 09, 2025 2:36:45 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Red 5. Hand now: 3
+Sep 09, 2025 2:36:45 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 3 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:46 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Red 3 on Red 5
+Sep 09, 2025 2:36:46 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Red 3. Hand now: 2
+Sep 09, 2025 2:36:46 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 3 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:48 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Red 6 on Red 3
+Sep 09, 2025 2:36:48 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Red 6. Hand now: 2
+Sep 09, 2025 2:36:48 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 2 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:49 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Red 4 on Red 6
+Sep 09, 2025 2:36:49 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Red 4. Hand now: 2
+Sep 09, 2025 2:36:49 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 2 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:52 PM main.java.Game.Session log
+INFO: [TURN -> User] User draws Wild Draw Four. Hand now: 3
+Sep 09, 2025 2:36:52 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 2 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:52 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Green 4 on Red 4
+Sep 09, 2025 2:36:52 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Green 4. Hand now: 1
+Sep 09, 2025 2:36:52 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 3 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:36:52 PM main.java.Game.Session log
+INFO: [TURN -> User] Bot 1 forgot to call UNO! +2 penalty applied.
+Sep 09, 2025 2:37:03 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Green 1 on Green 4
+Sep 09, 2025 2:37:03 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Green 1. Hand now: 2
+Sep 09, 2025 2:37:03 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 3 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:37:04 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Green Draw Two on Green 1
+Sep 09, 2025 2:37:04 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Green Draw Two. Hand now: 2
+Sep 09, 2025 2:37:04 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Draw Two. User draws 2.
+Sep 09, 2025 2:37:04 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] User draws 2 card(s) (requested 2). Hand: 4
+Sep 09, 2025 2:37:05 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 4 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:37:14 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Green 6 on Green Draw Two
+Sep 09, 2025 2:37:14 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Green 6. Hand now: 3
+Sep 09, 2025 2:37:14 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 2 cards), direction=Counter-Clockwise
+Sep 09, 2025 2:37:15 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Green Reverse on Green 6
+Sep 09, 2025 2:37:15 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Green Reverse. Hand now: 1
+Sep 09, 2025 2:37:15 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Direction reversed. Now Clockwise
+Sep 09, 2025 2:37:16 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 3 cards), direction=Clockwise
+Sep 09, 2025 2:37:16 PM main.java.Game.Session log
+INFO: [TURN -> User] Bot 1 forgot to call UNO! +2 penalty applied.
+Sep 09, 2025 2:37:22 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Green 0 on Green Reverse
+Sep 09, 2025 2:37:22 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Green 0. Hand now: 2
+Sep 09, 2025 2:37:22 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 3 cards), direction=Clockwise
+Sep 09, 2025 2:37:22 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Wild on Green 0
+Sep 09, 2025 2:37:22 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Wild. Hand now: 3
+Sep 09, 2025 2:37:22 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 (bot) chose color: Red
+Sep 09, 2025 2:37:24 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 2 cards), direction=Clockwise, currentColor=Red
+Sep 09, 2025 2:37:27 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Wild Draw Four on Wild (currentColor=Red)
+Sep 09, 2025 2:37:27 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Wild Draw Four. Hand now: 1
+Sep 09, 2025 2:37:28 PM main.java.Game.Session log
+INFO: [TURN -> User] User chose color: Yellow
+Sep 09, 2025 2:37:28 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Wild Draw Four. Bot 1 draws 4.
+Sep 09, 2025 2:37:28 PM main.java.Game.Session log
+INFO: [TURN -> User] Bot 1 draws 4 card(s) (requested 4). Hand: 7
+Sep 09, 2025 2:37:29 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Next turn: Bot 1 (hand: 7 cards), direction=Clockwise, currentColor=Yellow
+Sep 09, 2025 2:37:30 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 attempts to play Yellow 3 on Wild Draw Four (currentColor=Yellow)
+Sep 09, 2025 2:37:30 PM main.java.Game.Session log
+INFO: [TURN -> Bot 1] Bot 1 played Yellow 3. Hand now: 9
+Sep 09, 2025 2:37:30 PM main.java.Game.Session log
+INFO: [TURN -> User] Next turn: User (hand: 1 cards), direction=Clockwise
+Sep 09, 2025 2:37:32 PM main.java.Game.Session onUnoButtonClicked
+INFO: User has called Uno.
+Sep 09, 2025 2:37:35 PM main.java.Game.Session log
+INFO: [TURN -> User] User attempts to play Yellow Draw Two on Yellow 3
+Sep 09, 2025 2:37:35 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Yellow Draw Two. Hand now: 0
+Sep 09, 2025 2:37:35 PM main.java.Game.Session log
+INFO: [TURN -> User] User played Draw Two. Bot 1 draws 2.
+Sep 09, 2025 2:37:35 PM main.java.Game.Session log
+INFO: [TURN -> User] Bot 1 draws 2 card(s) (requested 2). Hand: 11
+Sep 09, 2025 2:37:37 PM main.java.Game.Session log
+INFO: [TURN -> User] User has no cards left and wins!

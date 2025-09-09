@@ -43,28 +43,53 @@ public class Session extends JFrame {
     private List<Card> discardPile;
     private int currentPlayerIndex = 0;
     private static final Logger LOGGER = Logger.getLogger(Session.class.getName());
+    
     private String currentColor;
     private boolean gameOver = false;
+ // Prevents re-entrant bot runs triggered by repeated UI updates
+    private boolean turnRunnerBusy = false;
+    private static final String LOG_FILE_PATH = "game_logs.txt";
+    
 
-    public Session(String sessionName, int playerCount, String humanPlayerEmail) {
-        this.sessionName = sessionName;
-        this.playerCount = playerCount;
-        this.humanPlayerEmail = humanPlayerEmail;
-        this.players = new ArrayList<>();
-        this.drawPile = new Deck();
-        this.discardPile = new ArrayList<>();
-        this.currentColor = null;
+ // Session.java — constructors
 
-        setupLogger();
-        setupMenu();
-        setTitle("UNO Game - " + sessionName);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000, 800);
-        setLocationRelativeTo(null);
-        setupUIComponents();
-        initializeGame();
-        setVisible(true);
-    }
+ // Existing 3-arg constructor now delegates to the 4-arg one.
+ public Session(String sessionName, int playerCount, String humanPlayerEmail) {
+     this(sessionName, playerCount, humanPlayerEmail, /*deferInit=*/false);
+ }
+
+ // New constructor that can skip initializeGame() when loading a save.
+ public Session(String sessionName, int playerCount, String humanPlayerEmail, boolean deferInit) {
+     this.sessionName = sessionName;
+     this.playerCount = playerCount;
+     this.humanPlayerEmail = humanPlayerEmail;
+
+     this.players = new ArrayList<>();
+     this.drawPile = new Deck();
+     this.discardPile = new ArrayList<>();
+     this.currentColor = null;
+     this.gameOver = false;
+     this.turnRunnerBusy = false;
+
+     setupLogger();
+     setupMenu();
+     setTitle("UNO Game - " + sessionName);
+     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+     setSize(1000, 800);
+     setLocationRelativeTo(null);
+     setupUIComponents();
+
+     if (!deferInit) {
+         // Normal "New Game" flow
+         initializeGame();
+     } else {
+         // Load-only flow: loadGame(...) will populate state; just render UI for now
+         updateGameUI();
+     }
+
+     setVisible(true);
+ }
+
 
     private void setupUIComponents() {
         drawPilePanel = new JPanel(new BorderLayout());
@@ -161,6 +186,13 @@ public class Session extends JFrame {
             JOptionPane.showMessageDialog(this, "User data not found!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    private boolean isUsersTurn() {
+        // Assuming player 0 is the human user
+        return currentPlayerIndex == 0 && !players.get(0).isBot();
+    }
+    
+    
 
     private UserData findUserByEmail(String email) {
         try {
@@ -235,50 +267,125 @@ public class Session extends JFrame {
     public void loadGame(BufferedReader in) {
         try {
             String line;
-            if ((line = in.readLine()) == null || !line.equals("GameInfo")) throw new IOException("Invalid save file format");
 
-            sessionName = in.readLine();
-            playerCount = Integer.parseInt(in.readLine());
-            currentPlayerIndex = Integer.parseInt(in.readLine());
-            isClockwise = Boolean.parseBoolean(in.readLine());
-            currentColor = in.readLine();
-            if ("None".equals(currentColor)) currentColor = null;
+            // --- Header ---
+            line = in.readLine();
+            if (line == null || !line.trim().equals("GameInfo")) {
+                throw new IOException("Invalid save file: missing GameInfo header");
+            }
 
-            if ((line = in.readLine()) == null || !line.equals("PlayersStart")) throw new IOException("Missing PlayersStart marker");
-            players.clear();
-            for (int i = 0; i < playerCount; i++) {
+            // Session name
+            line = in.readLine();
+            if (line == null) throw new IOException("Unexpected EOF reading sessionName");
+            this.sessionName = line;
+
+            // Player count
+            line = in.readLine();
+            if (line == null) throw new IOException("Unexpected EOF reading playerCount");
+            this.playerCount = Integer.parseInt(line.trim());
+
+            // Current player index
+            line = in.readLine();
+            if (line == null) throw new IOException("Unexpected EOF reading currentPlayerIndex");
+            this.currentPlayerIndex = Integer.parseInt(line.trim());
+
+            // Direction
+            line = in.readLine();
+            if (line == null) throw new IOException("Unexpected EOF reading isClockwise");
+            this.isClockwise = Boolean.parseBoolean(line.trim());
+
+            // Current color (can be "None")
+            line = in.readLine();
+            if (line == null) throw new IOException("Unexpected EOF reading currentColor");
+            line = line.trim();
+            this.currentColor = ("None".equalsIgnoreCase(line) ? null : line);
+
+            // --- Players & hands ---
+            line = in.readLine();
+            if (line == null || !line.trim().equals("PlayersStart")) {
+                throw new IOException("Missing PlayersStart section");
+            }
+
+            this.players.clear();
+            for (int i = 0; i < this.playerCount; i++) {
+                // name
                 String name = in.readLine();
-                boolean isBot = Boolean.parseBoolean(in.readLine());
-                int cardCount = Integer.parseInt(in.readLine());
-                Player player = new Player(name, isBot);
+                if (name == null) throw new IOException("Unexpected EOF reading player name (" + i + ")");
+                // isBot
+                String isBotStr = in.readLine();
+                if (isBotStr == null) throw new IOException("Unexpected EOF reading player isBot (" + i + ")");
+                boolean isBot = Boolean.parseBoolean(isBotStr.trim());
+                // card count
+                String countStr = in.readLine();
+                if (countStr == null) throw new IOException("Unexpected EOF reading player card count (" + i + ")");
+                int cardCount = Integer.parseInt(countStr.trim());
+
+                Player p = new Player(name, isBot);
                 for (int j = 0; j < cardCount; j++) {
-                    String[] cardData = in.readLine().split(",");
-                    player.addCard(new Card(cardData[0], cardData[1]));
+                    String cardLine = in.readLine();
+                    if (cardLine == null) throw new IOException("Unexpected EOF reading player card " + j + " for player " + i);
+                    String[] parts = cardLine.split(",", 2);
+                    if (parts.length != 2) throw new IOException("Invalid card entry: " + cardLine);
+                    p.addCard(new Card(parts[0], parts[1]));
                 }
-                players.add(player);
+                this.players.add(p);
             }
 
-            if ((line = in.readLine()) == null || !line.equals("DrawPileStart")) throw new IOException("Missing DrawPileStart marker");
-            List<Card> drawPileCards = new ArrayList<>();
-            while (!(line = in.readLine()).equals("DiscardPileStart")) {
-                String[] cardData = line.split(",");
-                drawPileCards.add(new Card(cardData[0], cardData[1]));
+            // Ensure consistency
+            if (this.players.size() != this.playerCount) {
+                this.playerCount = this.players.size();
             }
-            drawPile.getCards().clear();
-            drawPile.getCards().addAll(drawPileCards);
+            if (this.currentPlayerIndex < 0 || this.currentPlayerIndex >= this.players.size()) {
+                this.currentPlayerIndex = 0;
+            }
 
-            discardPile.clear();
+            // --- Draw pile ---
+            line = in.readLine();
+            if (line == null || !line.trim().equals("DrawPileStart")) {
+                throw new IOException("Missing DrawPileStart section");
+            }
+
+            java.util.List<Card> drawPileCards = new java.util.ArrayList<>();
+            while (true) {
+                line = in.readLine();
+                if (line == null) throw new IOException("Unexpected EOF inside DrawPile section");
+                line = line.trim();
+                if (line.equals("DiscardPileStart")) break;
+                if (line.isEmpty()) continue;
+                String[] parts = line.split(",", 2);
+                if (parts.length != 2) throw new IOException("Invalid draw pile card: " + line);
+                drawPileCards.add(new Card(parts[0], parts[1]));
+            }
+            this.drawPile.getCards().clear();
+            this.drawPile.getCards().addAll(drawPileCards);
+
+            // --- Discard pile (rest of file) ---
+            this.discardPile.clear();
             while ((line = in.readLine()) != null) {
-                String[] cardData = line.split(",");
-                discardPile.add(new Card(cardData[0], cardData[1]));
+                line = line.trim();
+                if (line.isEmpty()) continue;
+                String[] parts = line.split(",", 2);
+                if (parts.length != 2) throw new IOException("Invalid discard pile card: " + line);
+                this.discardPile.add(new Card(parts[0], parts[1]));
+            }
+
+            // Sanity: ensure we have at least one card in discard
+            if (this.discardPile.isEmpty() && !this.drawPile.isEmpty()) {
+                this.discardPile.add(this.drawPile.drawCard());
             }
 
             JOptionPane.showMessageDialog(this, "Game loaded successfully!", "Game Loaded", JOptionPane.INFORMATION_MESSAGE);
+
+            // Refresh UI and, if it's a bot's turn, let it act
             updateGameUI();
-        } catch (IOException | NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Failed to load the game: " + e.getMessage(), "Load Error", JOptionPane.ERROR_MESSAGE);
+            runBotIfNeeded();
+
+        } catch (IOException | NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Failed to load the game: " + ex.getMessage(), "Load Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
     }
+
 
     private void exitToMainMenu() {
         new MainMenuPage();
@@ -290,14 +397,53 @@ public class Session extends JFrame {
         updateGameUI();
     }
 
+ // Session.java
     private void initializeGame() {
+        // Reset core state
+        this.gameOver = false;
+        this.currentColor = null;
+        this.isClockwise = true;
+        this.currentPlayerIndex = 0;
+
+        // Fresh deck / piles
+        this.drawPile = new Deck();
+        this.discardPile.clear();
+
+        // Deal players
+        this.players.clear();
         drawPile.shuffleDeck();
-        initializePlayers();
-        discardPile.add(drawPile.drawCard());
-        currentPlayerIndex = 0;
-        isClockwise = true;
+        initializePlayers();   // deals 7 cards to each player
+
+        // Flip the first discard; avoid starting with a Wild Draw Four
+        Card first = drawPile.drawCard();
+        while (first != null && "Wild Draw Four".equals(first.getValue())) {
+            // put it back and reshuffle to pick another starter
+            drawPile.getCards().add(first);
+            drawPile.shuffleDeck();
+            first = drawPile.drawCard();
+        }
+        if (first == null) {
+            throw new IllegalStateException("Deck exhausted at game start.");
+        }
+        discardPile.add(first);
+
+        // Set the current color from the starter card
+        if (first.getValue().startsWith("Wild")) {
+            // If a plain Wild starts the game, choose a random color
+            this.currentColor = getRandomColor();
+        } else {
+            this.currentColor = first.getColor();
+        }
+
+        // Log and paint
+        log("Game initialized. Top discard: " + first + ", currentColor=" + currentColor
+                + ", players=" + players.size() + ", direction=" + (isClockwise ? "Clockwise" : "Counter-Clockwise"));
         updateGameUI();
+
+        // In case a bot would start (unlikely since user is index 0), this is safe and no-op otherwise
+        runBotIfNeeded();
     }
+
 
     private void initializePlayers() {
         for (int i = 0; i < playerCount; i++) {
@@ -313,15 +459,23 @@ public class Session extends JFrame {
 
     private void updateGameUI() {
         SwingUtilities.invokeLater(() -> {
+            System.out.println("[DEBUG] updateGameUI: players=" + players.size()
+                    + ", currentPlayerIndex=" + currentPlayerIndex
+                    + ", currentPlayer=" + players.get(currentPlayerIndex).getName()
+                    + ", clockwise=" + isClockwise
+                    + ", currentColor=" + currentColor);
+
+            // ---- Draw pile ----
             drawPilePanel.removeAll();
             drawPilePanel.add(new JLabel("Cards: " + drawPile.size()), BorderLayout.CENTER);
 
+            // ---- Discard pile (show top card image if available) ----
             discardPilePanel.removeAll();
             if (discardPile.isEmpty()) {
                 discardPilePanel.add(new JLabel("Discard Pile is empty"), BorderLayout.CENTER);
             } else {
                 Card topCard = discardPile.get(discardPile.size() - 1);
-                ImageIcon topCardImage = CardImageLoader.getCardImage(topCard.toString());
+                ImageIcon topCardImage = CardImageLoader.getCardImage(topCard.toString(), 140); // bigger
                 if (topCardImage != null) {
                     discardPilePanel.add(new JLabel(topCardImage), BorderLayout.CENTER);
                 } else {
@@ -329,104 +483,219 @@ public class Session extends JFrame {
                 }
             }
 
+            // ---- User hand (assume player 0 is the human) ----
             userDeckPanel.removeAll();
             Player userPlayer = players.get(0);
             for (Card card : userPlayer.getHand()) {
-                ImageIcon cardImage = CardImageLoader.getCardImage(card.toString());
-                userDeckPanel.add(new JLabel(cardImage != null ? cardImage : new ImageIcon(), SwingConstants.CENTER) {
-                    { setText(cardImage == null ? card.toString() : null); }
-                });
+                ImageIcon icon = CardImageLoader.getCardImage(card.toString(), 100);
+                if (icon != null) userDeckPanel.add(new JLabel(icon));
+                else userDeckPanel.add(new JLabel(card.toString()));
             }
 
+            // ---- Fill combo box with user's cards ----
             playCardComboBox.removeAllItems();
             if (!userPlayer.isBot()) {
-                for (Card card : userPlayer.getHand()) playCardComboBox.addItem(card);
+                for (Card c : userPlayer.getHand()) {
+                    playCardComboBox.addItem(c);
+                }
+                if (playCardComboBox.getItemCount() > 0) {
+                    playCardComboBox.setSelectedIndex(0);
+                }
             }
 
+            // ---- Other players' summaries ----
             playerPanel.removeAll();
             for (int i = 1; i < players.size(); i++) {
                 Player p = players.get(i);
                 playerPanel.add(new JLabel(p.getName() + ": " + p.getCardCount() + " cards"));
             }
 
+            // ---- Direction label ----
             directionLabel.setText("Direction: " + (isClockwise ? "Clockwise" : "Counter-Clockwise"));
-            unoButton.setEnabled(players.get(currentPlayerIndex).getCardCount() == 1);
+
+            // ---- Enable/disable controls based on turn ----
+            boolean usersTurn = isUsersTurn();
+            System.out.println("[DEBUG] updateGameUI: usersTurn=" + usersTurn);
+
+            playCardButton.setEnabled(usersTurn);
+            playCardComboBox.setEnabled(usersTurn && playCardComboBox.getItemCount() > 0);
+            drawCardButton.setEnabled(usersTurn);
+            skipTurnButton.setEnabled(usersTurn);
+
+            // UNO button: only when it's the user's turn, exactly one card, and UNO not already called
+            boolean unoEnabled = usersTurn
+                    && players.get(currentPlayerIndex).getCardCount() == 1
+                    && !players.get(currentPlayerIndex).hasCalledUno();
+            unoButton.setEnabled(unoEnabled);
+
+            // Call Out button: typically enabled when it's NOT the user's turn and the previous player is eligible
+            int prevIndex = (currentPlayerIndex - 1 + players.size()) % players.size();
+            Player prev = players.get(prevIndex);
+            boolean canCallOut = !usersTurn && prev.getCardCount() == 1 && !prev.hasCalledUno();
+            callOutButton.setEnabled(canCallOut);
 
             revalidate();
             repaint();
+
+            // If a bot should act now, let it run after UI refresh
+            runBotIfNeeded();
         });
     }
 
+
+
     private void setupLogger() {
         try {
-            Files.createDirectories(AppFiles.dataDir());
-            Path logPath = AppFiles.dataDir().resolve("game_logs.txt");
-            FileHandler handler = new FileHandler(logPath.toString(), true);
-            handler.setFormatter(new SimpleFormatter());
-            LOGGER.addHandler(handler);
-        } catch (IOException e) {
+            LOGGER.setUseParentHandlers(false);
+            LOGGER.setLevel(java.util.logging.Level.INFO);
+
+            // File log
+            java.util.logging.FileHandler fh = new java.util.logging.FileHandler(LOG_FILE_PATH, true);
+            fh.setFormatter(new java.util.logging.SimpleFormatter());
+            fh.setLevel(java.util.logging.Level.INFO);
+            LOGGER.addHandler(fh);
+
+            // Console log (Eclipse Console)
+            java.util.logging.ConsoleHandler ch = new java.util.logging.ConsoleHandler();
+            ch.setFormatter(new java.util.logging.SimpleFormatter());
+            ch.setLevel(java.util.logging.Level.INFO);
+            LOGGER.addHandler(ch);
+        } catch (java.io.IOException e) {
             System.err.println("Failed to set up logger: " + e.getMessage());
         }
     }
-
-    private void playSelectedCard() {
-        Card card = (Card) playCardComboBox.getSelectedItem();
-        if (card != null) playCard(card);
+    
+    private void log(String message) {
+        String who = (players != null && !players.isEmpty())
+                ? players.get(currentPlayerIndex).getName()
+                : "?";
+        String tag = "[TURN -> " + who + "] ";
+        LOGGER.info(tag + message);
     }
 
+
+    private void playSelectedCard() {
+        if (!isUsersTurn()) {
+            JOptionPane.showMessageDialog(this, "It's not your turn.", "Not your turn", JOptionPane.WARNING_MESSAGE);
+            System.out.println("[DEBUG] playSelectedCard blocked: currentPlayerIndex=" + currentPlayerIndex
+                    + ", currentPlayer=" + players.get(currentPlayerIndex).getName());
+            return;
+        }
+
+        Card card = (Card) playCardComboBox.getSelectedItem();
+        System.out.println("[DEBUG] playSelectedCard: selected=" + card
+                + ", userHandSize=" + players.get(0).getCardCount()
+                + ", currentPlayerIndex=" + currentPlayerIndex
+                + ", currentPlayer=" + players.get(currentPlayerIndex).getName());
+
+        if (card != null) {
+            playCard(card); // delegates to existing validation & UI updates
+        } else {
+            JOptionPane.showMessageDialog(this, "No card selected.", "Selection Required", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+ // Session.java
     private void playCard(Card card) {
+        if (card == null) return;
+
         Player currentPlayer = players.get(currentPlayerIndex);
+        if (discardPile.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Discard pile is empty; cannot play yet.", "Error", JOptionPane.ERROR_MESSAGE);
+            log("ERROR: discard pile empty when trying to play " + card);
+            return;
+        }
+
         Card topCard = discardPile.get(discardPile.size() - 1);
-        LOGGER.info("Attempting to play: " + card + " | Hand: " + currentPlayer.getCardCount() + " | UNO: " + currentPlayer.hasCalledUno());
+        log(currentPlayer.getName() + " attempts to play " + card + " on " + topCard
+                + (currentColor != null ? (" (currentColor=" + currentColor + ")") : ""));
 
-        if (canPlayCard(card, topCard)) {
-            boolean removed = currentPlayer.removeCard(card);
-            if (removed) {
-                discardPile.add(card);
+        // Validate move
+        if (!canPlayCard(card, topCard)) {
+            JOptionPane.showMessageDialog(this, "Invalid card played!", "Invalid Move", JOptionPane.ERROR_MESSAGE);
+            log("Move rejected: " + card + " cannot be played on " + topCard
+                    + (currentColor != null ? (" with currentColor=" + currentColor) : ""));
+            return;
+        }
 
-                if (card.getValue().startsWith("Wild")) {
-                    if (!currentPlayer.isBot()) {
-                        currentColor = getUserSelectedColor();
-                    } else {
-                        currentColor = getRandomColor();
-                        JOptionPane.showMessageDialog(this, currentPlayer.getName() + " changes the color to " + currentColor, "Color Changed", JOptionPane.INFORMATION_MESSAGE);
-                    }
-                }
+        // Remove from hand (value-based removal via Player.removeCard and Card.equals)
+        boolean removed = currentPlayer.removeCard(card);
+        if (!removed) {
+            JOptionPane.showMessageDialog(this, "Failed to remove card!", "Error", JOptionPane.ERROR_MESSAGE);
+            log("ERROR: removeCard() returned false for " + card + " (hand size: " + currentPlayer.getCardCount() + ")");
+            return;
+        }
 
-                if (card.getValue().equals("Reverse")) {
-                    isClockwise = !isClockwise;
-                    JOptionPane.showMessageDialog(this, "Game direction reversed!", "Reverse Card", JOptionPane.INFORMATION_MESSAGE);
-                } else if (card.getValue().equals("Skip")) {
-                    JOptionPane.showMessageDialog(this, currentPlayer.getName() + " plays Skip! Next player loses turn.", "Skip Card", JOptionPane.INFORMATION_MESSAGE);
-                    skipNextPlayer();
-                    updateGameUI();
-                    return;
-                }
+        // Place on discard
+        discardPile.add(card);
+        log(currentPlayer.getName() + " played " + card + ". Hand now: " + currentPlayer.getCardCount());
 
-                if (card.getValue().equals("Wild Draw Four")) {
-                    applyDraw(nextPlayerIndex(), 4);
-                } else if (card.getValue().equals("Draw Two")) {
-                    applyDraw(nextPlayerIndex(), 2);
-                }
-
-                updateGameUI();
-
-                if (currentPlayer.getCardCount() == 0) {
-                    checkUno(currentPlayer);
-                    if (currentPlayer.getCardCount() == 0) {
-                        JOptionPane.showMessageDialog(this, "Congratulations, " + currentPlayer.getName() + " has won the game!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
-                        LOGGER.info(currentPlayer.getName() + " wins the game.");
-                        endGame();
-                        return;
-                    }
-                }
-                nextPlayer();
+        // Handle Wilds (choose/announce color)
+        if (card.getValue().startsWith("Wild")) {
+            if (!currentPlayer.isBot()) {
+                currentColor = getUserSelectedColor();
+                log(currentPlayer.getName() + " chose color: " + currentColor);
             } else {
-                JOptionPane.showMessageDialog(this, "Failed to remove card!", "Error", JOptionPane.ERROR_MESSAGE);
+                currentColor = getRandomColor();
+                log(currentPlayer.getName() + " (bot) chose color: " + currentColor);
+                JOptionPane.showMessageDialog(this,
+                        currentPlayer.getName() + " changes the color to " + currentColor,
+                        "Color Changed", JOptionPane.INFORMATION_MESSAGE);
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Invalid card played!", "Error", JOptionPane.ERROR_MESSAGE);
+            // Once a non-wild is played, the transient wild color no longer matters
+            currentColor = null;
         }
+
+        // Action cards
+        String v = card.getValue();
+        if ("Reverse".equals(v)) {
+            isClockwise = !isClockwise;
+            log("Direction reversed. Now " + (isClockwise ? "Clockwise" : "Counter-Clockwise"));
+            JOptionPane.showMessageDialog(this, "Game direction reversed!", "Reverse Card",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else if ("Skip".equals(v)) {
+            int skippedIdx = nextPlayerIndex();
+            log(currentPlayer.getName() + " played Skip. " + players.get(skippedIdx).getName() + " is skipped.");
+            JOptionPane.showMessageDialog(this,
+                    currentPlayer.getName() + " plays Skip! Next player loses turn.",
+                    "Skip Card", JOptionPane.INFORMATION_MESSAGE);
+            skipNextPlayer(); // advances over the next player
+            updateGameUI();   // reflect immediately
+            return;           // turn already advanced by skipNextPlayer()
+        } else if ("Wild Draw Four".equals(v)) {
+            int target = nextPlayerIndex();
+            log(currentPlayer.getName() + " played Wild Draw Four. " + players.get(target).getName() + " draws 4.");
+            applyDraw(target, 4);
+            // (Rules usually also skip their turn; keeping existing game flow unless you choose to skip here.)
+        } else if ("Draw Two".equals(v)) {
+            int target = nextPlayerIndex();
+            log(currentPlayer.getName() + " played Draw Two. " + players.get(target).getName() + " draws 2.");
+            applyDraw(target, 2);
+            // (Rules usually also skip their turn; keeping existing game flow unless you choose to skip here.)
+        }
+
+        // Refresh UI after effects
+        updateGameUI();
+
+        // Win / UNO checks
+        if (currentPlayer.getCardCount() == 0) {
+            // If the player reached 0 from 1, check UNO status (may apply penalty)
+            boolean unoOk = checkUno(currentPlayer);
+            if (currentPlayer.getCardCount() == 0) { // still zero after any penalty
+                log(currentPlayer.getName() + " has no cards left and wins!");
+                JOptionPane.showMessageDialog(this,
+                        "Congratulations, " + currentPlayer.getName() + " has won the game!",
+                        "Game Over", JOptionPane.INFORMATION_MESSAGE);
+                endGame();
+                return;
+            } else {
+                log(currentPlayer.getName() + " failed UNO check; penalty applied.");
+            }
+        }
+
+        // Advance to next turn
+        nextPlayer();
     }
 
     private int nextPlayerIndex() {
@@ -435,20 +704,64 @@ public class Session extends JFrame {
         return nextIndex;
     }
 
+ // Session.java
     private void skipNextPlayer() {
-        currentPlayerIndex = nextPlayerIndex();
-        currentPlayerIndex = nextPlayerIndex();
-        LOGGER.info("Skipping player: " + players.get(currentPlayerIndex).getName());
+        if (players == null || players.isEmpty()) return;
+
+        // The player who would have played next (and will be skipped)
+        int skippedIdx = nextPlayerIndex();
+        String skippedName = players.get(skippedIdx).getName();
+
+        // Advance over the skipped player
+        currentPlayerIndex = skippedIdx;          // move to the skipped player
+        currentPlayerIndex = nextPlayerIndex();   // move past them to the following player
+
+        String nowName = players.get(currentPlayerIndex).getName();
+        log("Skip applied: " + skippedName + " loses their turn. It's now " + nowName + "'s turn.");
+
+        // Refresh UI and, if it's a bot now, let it act
         updateGameUI();
+        runBotIfNeeded();
     }
 
+
     private void applyDraw(int playerIndex, int cardsCount) {
-        Player player = players.get(playerIndex);
-        for (int i = 0; i < cardsCount; i++) {
-            if (drawPile.isEmpty()) reshuffleDiscardIntoDraw();
-            if (!drawPile.isEmpty()) player.addCard(drawPile.drawCard());
+        // Guard invalid inputs
+        if (playerIndex < 0 || playerIndex >= players.size() || cardsCount <= 0) {
+            return;
         }
-        JOptionPane.showMessageDialog(this, player.getName() + " draws " + cardsCount + " cards.", "Cards Drawn", JOptionPane.INFORMATION_MESSAGE);
+
+        Player player = players.get(playerIndex);
+        int actuallyDrawn = 0;
+
+        for (int i = 0; i < cardsCount; i++) {
+            if (drawPile.isEmpty()) {
+                // Try to rebuild the draw pile from the discard pile (keeping top discard)
+                reshuffleDiscardIntoDraw();
+            }
+            if (drawPile.isEmpty()) {
+                // Still empty — nothing left to draw
+                log("applyDraw: deck exhausted while drawing for " + player.getName()
+                        + ". Drawn so far: " + actuallyDrawn + "/" + cardsCount);
+                break;
+            }
+
+            Card c = drawPile.drawCard();
+            if (c == null) {
+                log("applyDraw: drawPile.drawCard() returned null");
+                break;
+            }
+            player.addCard(c);
+            actuallyDrawn++;
+        }
+
+        log(player.getName() + " draws " + actuallyDrawn + " card(s) (requested " + cardsCount + "). Hand: "
+                + player.getCardCount());
+        JOptionPane.showMessageDialog(this,
+                player.getName() + " draws " + actuallyDrawn + " card" + (actuallyDrawn == 1 ? "" : "s") + ".",
+                "Cards Drawn",
+                JOptionPane.INFORMATION_MESSAGE);
+        // Note: UI refresh is handled by the caller (e.g., playCard -> updateGameUI()).
     }
 
     private String getRandomColor() {
@@ -474,18 +787,39 @@ public class Session extends JFrame {
         return false;
     }
 
+ // Session.java
     private void drawCard() {
+        // Only the human user (player 0) can trigger this button
+        if (!isUsersTurn()) {
+            JOptionPane.showMessageDialog(this, "It's not your turn.", "Not your turn", JOptionPane.WARNING_MESSAGE);
+            log("Human attempted to draw out of turn.");
+            return;
+        }
+
         Player currentPlayer = players.get(currentPlayerIndex);
+
+        // If draw pile is empty, try to rebuild it from the discard pile (keeping top discard)
+        if (drawPile.isEmpty()) {
+            log("Draw pile empty; reshuffling discard into draw.");
+            reshuffleDiscardIntoDraw();
+        }
+
+        // Draw 1 card
         if (!drawPile.isEmpty()) {
             Card drawnCard = drawPile.drawCard();
             currentPlayer.addCard(drawnCard);
+            log(currentPlayer.getName() + " draws " + drawnCard + ". Hand now: " + currentPlayer.getCardCount());
         } else {
-            reshuffleDiscardIntoDraw();
+            // Still empty after reshuffle: nothing to draw
+            log("No cards to draw even after reshuffle.");
         }
+
+        // Refresh, check end conditions, then pass the turn to the next player
         updateGameUI();
         checkGameEnd();
         nextPlayer();
     }
+
 
     private void checkGameEnd() {
         Player currentPlayer = players.get(currentPlayerIndex);
@@ -620,16 +954,33 @@ public class Session extends JFrame {
     }
 
     private void nextPlayer() {
-        currentPlayerIndex = nextPlayerIndex();
-        Player currentPlayer = players.get(currentPlayerIndex);
+        if (gameOver || players == null || players.isEmpty()) return;
 
-        if (!currentPlayer.isBot()) {
-            checkUno(players.get((currentPlayerIndex - 1 + players.size()) % players.size()));
-        } else {
-            playBotTurn(currentPlayer);
+        // Advance turn index (wraps with direction)
+        currentPlayerIndex = nextPlayerIndex();
+
+        // Safety: clamp if something went odd
+        if (currentPlayerIndex < 0) currentPlayerIndex = 0;
+        if (currentPlayerIndex >= players.size()) currentPlayerIndex = players.size() - 1;
+
+        Player cp = players.get(currentPlayerIndex);
+        log("Next turn: " + cp.getName()
+                + " (hand: " + cp.getCardCount() + " cards), direction="
+                + (isClockwise ? "Clockwise" : "Counter-Clockwise")
+                + (currentColor != null ? (", currentColor=" + currentColor) : ""));
+
+        // If it becomes the human's turn, evaluate UNO for the previous player right away
+        if (!cp.isBot()) {
+            int prevIdx = (currentPlayerIndex - 1 + players.size()) % players.size();
+            Player prev = players.get(prevIdx);
+            checkUno(prev);
         }
+
+        // Refresh UI and schedule bot if needed
         updateGameUI();
+        runBotIfNeeded();
     }
+
 
     private void playTurn() {
         Player currentPlayer = players.get(currentPlayerIndex);
@@ -661,13 +1012,32 @@ public class Session extends JFrame {
     }
 
     private boolean checkUno(Player player) {
-        if (player.getCardCount() == 1 && !player.hasCalledUno()) {
-            JOptionPane.showMessageDialog(this, player.getName() + " forgot to call UNO! Adding 2 penalty cards.", "Missed UNO!", JOptionPane.ERROR_MESSAGE);
-            applyPenalty(player);
-            return false;
+        if (player == null) return true; // nothing to check
+
+        // UNO matters only when a player has exactly one card left
+        if (player.getCardCount() == 1) {
+            if (player.hasCalledUno()) {
+                // Good: UNO was called in time
+                log(player.getName() + " has UNO!");
+                return true;
+            } else {
+                // Missed UNO → +2 penalty
+                log(player.getName() + " forgot to call UNO! +2 penalty applied.");
+                JOptionPane.showMessageDialog(
+                        this,
+                        player.getName() + " forgot to call UNO! Adding 2 penalty cards.",
+                        "Missed UNO!",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                applyPenalty(player); // draws 2 and refreshes UI
+                return false;
+            }
         }
+
+        // Not at UNO (0 or ≥2 cards) — no action needed
         return true;
     }
+
 
     private void playBotTurn(Player bot) {
         Card topCard = discardPile.get(discardPile.size() - 1);
@@ -691,25 +1061,38 @@ public class Session extends JFrame {
     }
 
     private void onUnoButtonClicked() {
-        Player currentPlayer = players.get(currentPlayerIndex);
-        if (currentPlayer.getCardCount() == 1) {
-            currentPlayer.callUno();
-            JOptionPane.showMessageDialog(this, currentPlayer.getName() + " has called UNO!", "UNO Called", JOptionPane.INFORMATION_MESSAGE);
-            LOGGER.info(currentPlayer.getName() + " has called Uno.");
+        if (!isUsersTurn()) {
+            JOptionPane.showMessageDialog(this, "You can only call UNO on your turn.", "Not your turn", JOptionPane.WARNING_MESSAGE);
+            System.out.println("[DEBUG] onUnoButtonClicked blocked: currentPlayerIndex=" + currentPlayerIndex
+                    + ", currentPlayer=" + players.get(currentPlayerIndex).getName());
+            return;
+        }
+
+        Player me = players.get(currentPlayerIndex);
+        if (me.getCardCount() == 1) {
+            me.callUno();
+            JOptionPane.showMessageDialog(this, me.getName() + " has called UNO!", "UNO Called", JOptionPane.INFORMATION_MESSAGE);
+            LOGGER.info(me.getName() + " has called Uno.");
+            updateGameUI(); // immediately reflect the disabled UNO button
         } else {
             JOptionPane.showMessageDialog(this, "You can only call UNO when you are about to play your last card!", "UNO Call Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void onCallOutButtonClicked() {
-        Player currentPlayer = players.get(currentPlayerIndex);
-        if (currentPlayer.getCardCount() == 1) {
-            for (int i = 0; i < 2; i++) currentPlayer.addCard(drawPile.drawCard());
-            JOptionPane.showMessageDialog(this, currentPlayer.getName() + " didn't call UNO! Penalized with 2 cards.", "Call Out", JOptionPane.INFORMATION_MESSAGE);
+        System.out.println("[DEBUG] onCallOutButtonClicked: currentPlayer=" + players.get(currentPlayerIndex).getName());
+
+        int prevIndex = (currentPlayerIndex - 1 + players.size()) % players.size();
+        Player target = players.get(prevIndex);
+
+        if (target.getCardCount() == 1 && !target.hasCalledUno()) {
+            applyPenalty(target); // draw 2 for the target; reshuffles if needed
+            JOptionPane.showMessageDialog(this, target.getName() + " didn't call UNO! Penalized with 2 cards.", "Call Out", JOptionPane.INFORMATION_MESSAGE);
+            LOGGER.info("Call out applied to " + target.getName());
+            updateGameUI();
         } else {
-            JOptionPane.showMessageDialog(this, "Can't call out a player now!", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "No eligible player to call out right now.", "Call Out", JOptionPane.INFORMATION_MESSAGE);
         }
-        updateGameUI();
     }
 
     public void setGameState(Deck drawPile, List<Card> discardPile, List<Player> players, int currentPlayerIndex, boolean isClockwise) {
@@ -727,4 +1110,46 @@ public class Session extends JFrame {
         drawCardButton.addActionListener(e -> drawCard());
         playCardButton.addActionListener(e -> playSelectedCard());
     }
+    
+    private void runBotIfNeeded() {
+        if (gameOver) return;
+        if (players == null || players.isEmpty()) return;
+        if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) return;
+        if (turnRunnerBusy) return;
+
+        Player current = players.get(currentPlayerIndex);
+        if (current == null || !current.isBot()) return;
+
+        turnRunnerBusy = true;
+
+        new javax.swing.Timer(600, e -> {
+            try {
+                ((javax.swing.Timer) e.getSource()).stop();
+
+                // Re-check all preconditions on the EDT before acting
+                if (gameOver) return;
+                if (players == null || players.isEmpty()) return;
+                if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) return;
+
+                Player cp = players.get(currentPlayerIndex);
+                if (cp == null || !cp.isBot()) return;
+
+                System.out.println("[DEBUG] runBotIfNeeded: executing bot turn for " + cp.getName());
+                playBotTurn(cp);
+
+                // If it's still a bot after that action (e.g., drew but couldn't play), advance; else just repaint
+                if (!gameOver) {
+                    if (currentPlayerIndex >= 0 && currentPlayerIndex < players.size()
+                            && players.get(currentPlayerIndex).isBot()) {
+                        nextPlayer();
+                    } else {
+                        updateGameUI();
+                    }
+                }
+            } finally {
+                turnRunnerBusy = false;
+            }
+        }).start();
+    }
+
 }

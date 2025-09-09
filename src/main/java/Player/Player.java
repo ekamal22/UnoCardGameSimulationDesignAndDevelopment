@@ -3,90 +3,113 @@ package main.java.Player;
 import main.java.Object.Card;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
-public class Player{
-    
+/**
+ * Player
+ * - Holds hand, identity (human/bot), and UNO state.
+ * - removeCard(...) removes by value (uses Card.equals), not by object identity.
+ * - findPlayableCard(...) offers a simple bot heuristic:
+ *     prefer non-wild cards that match color or value; if none, play a wild.
+ */
+public class Player {
 
-    private String name;
-    private List<Card> hand; 
-    private boolean isBot; 
-    private boolean hasCalledUno = false; // Field to track if UNO has been called
-
+    private final String name;
+    private final boolean bot;
+    private final List<Card> hand = new ArrayList<>();
+    private boolean calledUno = false;
 
     public Player(String name, boolean isBot) {
         this.name = name;
-        this.hand = new ArrayList<>();
-        this.isBot = isBot;
-        this.hasCalledUno = false;
+        this.bot = isBot;
     }
 
-    
+    // ---- identity ----
+    public String getName() { return name; }
+    public boolean isBot() { return bot; }
 
-    public String getName() {
-        return name;
-    }
-
-    public void addCard(Card card) {
-        hand.add(card);
-        if (hand.size() != 1) {
-            this.hasCalledUno = false;  // Reset UNO call when card count changes
-        }
-    }
-
-    public boolean removeCard(Card card) {
-        boolean wasRemoved = hand.remove(card);
-        if (hand.size() != 1) {
-            this.hasCalledUno = false;  // Reset UNO call when card count changes
-        }
-        return wasRemoved;
-    }
-
-    public Card playCard(Card card) {
-        if (removeCard(card)) {
-            return card;
-        }
-        return null;
+    // ---- hand management ----
+    /** Unmodifiable view to avoid accidental external mutation. */
+    public List<Card> getHand() {
+        return Collections.unmodifiableList(hand);
     }
 
     public int getCardCount() {
         return hand.size();
     }
 
-    public boolean isBot() {
-        return isBot;
-    }
-
-    public List<Card> getHand() {
-        return hand;
-    }
-    
-    public Card findPlayableCard(Card topCard) {
-        for (Card card : hand) {
-            if (card.getColor().equals(topCard.getColor()) || 
-                card.getValue().equals(topCard.getValue()) ||
-                card.getColor().equals("Wild")) {
-                return card;
+    /** Add a card to hand; if hand grows, UNO call (if any) is no longer valid. */
+    public void addCard(Card c) {
+        if (c != null) {
+            hand.add(c);
+            if (hand.size() > 1) {
+                calledUno = false; // drawing usually cancels an existing UNO call
             }
         }
-        return null; // Return null if no playable card is found
     }
-    
-    
-    
- // Method to determine if the player has called UNO
+
+    /**
+     * Remove a card by value (color + value for non-wilds; value-only for wilds).
+     * Returns true if any matching card was removed.
+     */
+    public boolean removeCard(Card target) {
+        if (target == null) return false;
+        Iterator<Card> it = hand.iterator();
+        while (it.hasNext()) {
+            Card c = it.next();
+            if (target.equals(c)) {    // relies on Card.equals/hashCode you just added
+                it.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ---- UNO state ----
     public boolean hasCalledUno() {
-        return this.hasCalledUno;
+        return calledUno;
     }
 
-    // Method to set the UNO call status
+    /** Mark UNO as called (Session checks the "one card left" rule before calling this). */
     public void callUno() {
-        this.hasCalledUno = true;
+        calledUno = true;
     }
 
-    
-    public void clearUnoCall() {
-        this.hasCalledUno = false;
+    // ---- simple bot helper ----
+    /**
+     * Pick a playable card against a visible top card.
+     * Heuristic: first try non-wild matches (color or value), then wilds.
+     * (Session will still validate play using its own canPlayCard logic.)
+     */
+    public Card findPlayableCard(Card topCard) {
+        if (topCard == null) return findAnyWild();
+
+        // Prefer non-wild matches (color or value)
+        for (Card c : hand) {
+            if (!c.isWild()) {
+                if (c.getColor() != null && c.getColor().equals(topCard.getColor())) {
+                    return c;
+                }
+                if (c.getValue() != null && c.getValue().equals(topCard.getValue())) {
+                    return c;
+                }
+            }
+        }
+        // If none, use a wild if available
+        return findAnyWild();
     }
 
+    private Card findAnyWild() {
+        for (Card c : hand) {
+            if (c.isWild()) return c;
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return (bot ? "[BOT] " : "") + name + " (" + hand.size() + " cards)";
+    }
 }
